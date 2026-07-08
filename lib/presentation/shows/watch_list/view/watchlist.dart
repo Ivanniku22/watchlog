@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:watchlog/presentation/upcoming/controller/upcoming_controller.dart';
+import 'package:watchlog/presentation/shows/watch_list/controller/watchlist_controller.dart';
 
-class Upcoming extends GetView<UpcomingController> {
-  const Upcoming({super.key});
+class Watchlist extends GetView<WatchlistController> {
+  const Watchlist({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Text(
-        'Upcoming',
+        'Watch List',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w300,
           fontFamily: 'Inter',

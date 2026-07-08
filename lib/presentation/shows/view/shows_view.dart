@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:watchlog/presentation/upcoming/view/upcoming.dart';
-import 'package:watchlog/presentation/watch_list/view/watchlist.dart';
+import 'package:watchlog/presentation/shows/upcoming/view/upcoming.dart';
+import 'package:watchlog/presentation/shows/watch_list/view/watchlist.dart';
 
-import '../controller/home_view_model.dart';
+import '../controller/shows_view_model.dart';
 
-class HomeView extends GetView<HomeViewModel> {
-  const HomeView({super.key});
+class ShowsView extends GetView<ShowsViewModel> {
+  const ShowsView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +17,7 @@ class HomeView extends GetView<HomeViewModel> {
         return DefaultTabController(
           length: 2,
           child: Scaffold(
-            appBar: AppBar(
-              bottom: _showsTabBar(context),
-            ),
+            appBar: AppBar(bottom: _showsTabBar(context)),
             body: const TabBarView(children: [Watchlist(), Upcoming()]),
             bottomNavigationBar: _BottomNav(
               selectedIndex: selectedIndex,

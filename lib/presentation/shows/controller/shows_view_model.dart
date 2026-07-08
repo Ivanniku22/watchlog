@@ -2,8 +2,8 @@ import 'package:get/get.dart';
 
 import '../../../data/repositories/show_repository.dart';
 
-class HomeViewModel extends GetxController {
-  HomeViewModel({required this.showRepository});
+class ShowsViewModel extends GetxController {
+  ShowsViewModel({required this.showRepository});
 
   final ShowRepository showRepository;
 
