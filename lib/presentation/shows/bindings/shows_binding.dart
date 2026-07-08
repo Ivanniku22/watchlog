@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 
-import '../../data/repositories/show_repository.dart';
-import '../../presentation/shows/controller/shows_view_model.dart';
-import '../../presentation/shows/upcoming/controller/upcoming_controller.dart';
-import '../../presentation/shows/watch_list/controller/watchlist_controller.dart';
+import '../../../data/repositories/show_repository.dart';
+import '../controller/shows_view_model.dart';
+import '../upcoming/controller/upcoming_controller.dart';
+import '../watch_list/controller/watchlist_controller.dart';
 
 class ShowsBinding extends Bindings {
   @override

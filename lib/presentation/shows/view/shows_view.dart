@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:watchlog/presentation/shows/upcoming/view/upcoming.dart';
 import 'package:watchlog/presentation/shows/watch_list/view/watchlist.dart';
+import 'package:watchlog/presentation/explore/view/explore.dart';
+import 'package:watchlog/presentation/movies/view/movies.dart';
+import 'package:watchlog/presentation/profile/view/profile.dart';
 
 import '../controller/shows_view_model.dart';
 
@@ -27,11 +30,15 @@ class ShowsView extends GetView<ShowsViewModel> {
         );
       }
 
+      final navPages = [
+        const SizedBox.shrink(),
+        const Movies(),
+        const Explore(),
+        const Profile(),
+      ];
+
       return Scaffold(
-        body: _NavPage(
-          icon: _navPageIcons[selectedIndex],
-          title: controller.selectedTitle,
-        ),
+        body: navPages[selectedIndex],
         bottomNavigationBar: _BottomNav(
           selectedIndex: selectedIndex,
           onDestinationSelected: controller.changeTab,
@@ -108,32 +115,3 @@ class _BottomNav extends StatelessWidget {
   }
 }
 
-class _NavPage extends StatelessWidget {
-  const _NavPage({required this.icon, required this.title});
-
-  final IconData icon;
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 48, color: colorScheme.primary),
-          const SizedBox(height: 12),
-          Text(title, style: Theme.of(context).textTheme.titleLarge),
-        ],
-      ),
-    );
-  }
-}
-
-const _navPageIcons = [
-  Icons.tv_rounded,
-  Icons.movie_rounded,
-  Icons.search_rounded,
-  Icons.person_rounded,
-];
