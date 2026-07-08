@@ -14,6 +14,7 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'Inter',
       colorScheme: colorScheme,
       scaffoldBackgroundColor: const Color(0xFFF8FAFC),
       appBarTheme: const AppBarTheme(
@@ -21,21 +22,6 @@ class AppTheme {
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Color(0xFF0F172A),
-      ),
-      cardTheme: CardThemeData(
-        elevation: 0,
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-      ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -45,22 +31,22 @@ class AppTheme {
         ),
       ),
       textTheme: const TextTheme(
-        headlineLarge: TextStyle(color: Color(0xFF0F172A)),
-        headlineMedium: TextStyle(color: Color(0xFF0F172A)),
-        headlineSmall: TextStyle(color: Color(0xFF0F172A)),
-        titleLarge: TextStyle(
-            color: Color(0xFF0F172A),
-          fontSize: 17,
-          fontFamily: "Inter",
+        headlineMedium: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
         ),
-        titleMedium: TextStyle(color: Color(0xFF0F172A)),
-        titleSmall: TextStyle(color: Color(0xFF0F172A)),
-        bodyLarge: TextStyle(color: Color(0xFF334155)),
-        bodyMedium: TextStyle(color: Color(0xFF334155)),
-        bodySmall: TextStyle(color: Color(0xFF64748B)),
-        labelLarge: TextStyle(color: Color(0xFF0F172A)),
-        labelMedium: TextStyle(color: Color(0xFF334155)),
-        labelSmall: TextStyle(color: Color(0xFF64748B)),
+        titleLarge: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        bodyLarge: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+        ),
       ),
     );
   }
@@ -73,34 +59,72 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'Inter',
       colorScheme: colorScheme,
       scaffoldBackgroundColor: const Color(0xFF020617),
-      cardTheme: CardThemeData(
-        elevation: 0,
-        color: const Color(0xFF0F172A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: Color(0xFF1E293B)),
-        ),
-      ),
       textTheme: const TextTheme(
-        headlineLarge: TextStyle(color: Color(0xFFF8FAFC)),
-        headlineMedium: TextStyle(color: Color(0xFFF8FAFC)),
-        headlineSmall: TextStyle(color: Color(0xFFF8FAFC)),
-        titleLarge: TextStyle(
-            color: Color(0xFFF8FAFC),
-          fontSize: 17,
-          fontFamily: "Inter",
+        headlineLarge: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFFF8FAFC),
         ),
-        titleMedium: TextStyle(color: Color(0xFFF8FAFC)),
-        titleSmall: TextStyle(color: Color(0xFFF8FAFC)),
-        bodyLarge: TextStyle(color: Color(0xFFCBD5E1)),
-        bodyMedium: TextStyle(color: Color(0xFFCBD5E1)),
-        bodySmall: TextStyle(color: Color(0xFF94A3B8)),
-        labelLarge: TextStyle(color: Color(0xFFF8FAFC)),
-        labelMedium: TextStyle(color: Color(0xFFCBD5E1)),
-        labelSmall: TextStyle(color: Color(0xFF94A3B8)),
+        headlineMedium: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFFF8FAFC),
+        ),
+        headlineSmall: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFFF8FAFC),
+        ),
+        titleLarge: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFFF8FAFC),
+        ),
+        titleMedium: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFFE2E8F0),
+        ),
+        titleSmall: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFFE2E8F0),
+        ),
+        bodyLarge: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          color: Color(0xFFCBD5E1),
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: Color(0xFFCBD5E1),
+        ),
+        bodySmall: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          color: Color(0xFF94A3B8),
+        ),
+        labelLarge: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFFF8FAFC),
+        ),
+        labelMedium: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFFCBD5E1),
+        ),
+        labelSmall: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF94A3B8),
+        ),
       ),
+
     );
 
 
