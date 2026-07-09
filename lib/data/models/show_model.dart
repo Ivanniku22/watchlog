@@ -1,36 +1,21 @@
-class ShowModel {
-  ShowModel({
-    required this.id,
-    required this.title,
-    required this.totalEpisodes,
-    required this.watchedEpisodes,
-    required this.status,
-  });
-
-  final String id;
+class Show {
+  final int id;
   final String title;
-  final int totalEpisodes;
-  final int watchedEpisodes;
-  final String status;
+  final String poster;
+  final String season;
+  final String episode;
+  final String episodeTitle;
+  final String episodePend;
+  bool watched;
 
-  double get progress {
-    if (totalEpisodes == 0) return 0;
-    return watchedEpisodes / totalEpisodes;
-  }
-
-  ShowModel copyWith({
-    String? id,
-    String? title,
-    int? totalEpisodes,
-    int? watchedEpisodes,
-    String? status,
-  }) {
-    return ShowModel(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      totalEpisodes: totalEpisodes ?? this.totalEpisodes,
-      watchedEpisodes: watchedEpisodes ?? this.watchedEpisodes,
-      status: status ?? this.status,
-    );
-  }
+  Show({
+    required this.title,
+    required this.poster,
+    required this.season,
+    required this.episode,
+    required this.episodeTitle,
+    this.watched = false,
+    required this.id,
+    required this.episodePend,
+  });
 }
