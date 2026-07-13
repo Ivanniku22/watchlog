@@ -48,6 +48,9 @@ class AppTheme {
           fontWeight: FontWeight.w400,
         ),
       ),
+      cardTheme: CardThemeData(
+        color: Colors.white
+      ),
     );
   }
 
@@ -124,7 +127,9 @@ class AppTheme {
           color: Color(0xFF94A3B8),
         ),
       ),
-
+      cardTheme: const CardThemeData(
+        color: Colors.black,
+      )
     );
 
 

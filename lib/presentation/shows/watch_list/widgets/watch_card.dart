@@ -24,7 +24,7 @@ class _WatchCardState extends State<WatchCard> {
       height: 100,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.black,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: Colors.grey.shade900,
@@ -66,7 +66,7 @@ class _WatchCardState extends State<WatchCard> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black,
+                      color: Theme.of(context).cardTheme.color,
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(
                         color: Colors.white, // Border color
