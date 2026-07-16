@@ -12,6 +12,7 @@ class Watchlist extends GetView<WatchlistController> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      physics: BouncingScrollPhysics(),
       child: Padding(
         padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 20.0),
         child: Column(
