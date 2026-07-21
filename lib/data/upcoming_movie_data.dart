@@ -26,4 +26,25 @@ final List<MovieWatchList> upcomingMovies = [
     id: 5,
     poster:"https://media.themoviedb.org/t/p/original/tuFaWiqX0TXoWu7DGNcmX3UW7sT.jpg",
   ),
+
+  MovieWatchList(
+    id: 6,
+    poster:"https://media.themoviedb.org/t/p/original/sCcNuUI1RA9bMunxAdt7KRypFbP.jpg",
+  ),
+
+  MovieWatchList(
+    id: 7,
+    poster:"https://media.themoviedb.org/t/p/original/kpWsIkfXrnQ1pmR79qAHHq7DPxc.jpg",
+  ),
+
+  MovieWatchList(
+    id: 8,
+    poster:"https://media.themoviedb.org/t/p/original/dFipUR6W0y3PPkuVS8gjFd929m2.jpg",
+  ),
+
+  MovieWatchList(
+    id: 9,
+    poster:"https://media.themoviedb.org/t/p/original/6inkRM1XGBG5vRhclCPWfMenp7N.jpg",
+  ),
+
 ];

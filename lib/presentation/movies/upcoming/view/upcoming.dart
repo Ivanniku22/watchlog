@@ -8,25 +8,38 @@ class Upcoming extends GetView <UpcomingController>{
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding:const EdgeInsets.all(10),
-      child: GridView.builder(
-          itemCount: upcomingMovies.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 3,
-            mainAxisSpacing: 8,
-            childAspectRatio: 0.6,
-          ),
-          itemBuilder: (context, index) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                upcomingMovies[index].poster,
-                fit: BoxFit.cover,
-              ),
-            );
-          }
+    return SingleChildScrollView(
+      physics: BouncingScrollPhysics(),
+      child: Padding(
+        padding:const EdgeInsets.all(10),
+        child: Column(
+          children: [
+
+            // Images grid
+            GridView.builder(
+              shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: upcomingMovies.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 3,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 0.6,
+                ),
+                itemBuilder: (context, index) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      upcomingMovies[index].poster,
+                      fit: BoxFit.cover,
+                    ),
+                  );
+                }
+            ),
+
+            SizedBox(height: 20,)
+          ],
+        ),
       ),
     );
   }
