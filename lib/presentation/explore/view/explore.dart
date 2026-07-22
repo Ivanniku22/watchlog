@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:watchlog/presentation/explore/controller/explore_controller.dart';
+import 'package:watchlog/presentation/explore/widgets/filters.dart';
 
 class Explore extends GetView<ExploreController>{
 
@@ -11,14 +12,6 @@ class Explore extends GetView<ExploreController>{
   @override
   Widget build(BuildContext context) {
 
-    final List<String> filters = [
-      "FEED",
-      "DISCOVER",
-      "GROUPS",
-      "ACTIVITY"
-    ];
-
-
     return SingleChildScrollView(
       physics: BouncingScrollPhysics(),
       child: SafeArea(
@@ -26,6 +19,7 @@ class Explore extends GetView<ExploreController>{
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
           child: Column(
             children: [
+              // Search Field
               TextField(
                 style: Theme.of(context).textTheme.bodySmall,
                 decoration: InputDecoration(
@@ -37,7 +31,12 @@ class Explore extends GetView<ExploreController>{
                     )
                   ),
                 ),
-              )
+              ),
+
+              SizedBox(height: 10,),
+
+              //Filters
+              Filters(),
             ],
           ),
         ),
