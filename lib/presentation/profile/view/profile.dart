@@ -33,6 +33,13 @@ class Profile extends GetView<ProfileController>{
                       ),
                     ),
 
+                    // Slight dark overlay
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black.withOpacity(0.2),
+                      ),
+                    ),
+
                     // Buttons over the image
                     SafeArea(
                       child: Align(
