@@ -36,7 +36,7 @@ class Profile extends GetView<ProfileController>{
                     // Slight dark overlay
                     Positioned.fill(
                       child: Container(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.5),
                       ),
                     ),
 
@@ -82,6 +82,65 @@ class Profile extends GetView<ProfileController>{
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                    ),
+
+                    // User Image
+                    Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          bottom: 10,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            // Profile image
+                            Container(
+                              width: 70,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 4,
+                                ),
+                                image: const DecorationImage(
+                                  image: NetworkImage(
+                                    'https://i.pravatar.cc/300',
+                                  ),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(width: 12),
+
+                            // Edit button
+                            ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                side: const BorderSide(
+                                  color: Colors.white,
+                                  width: 1,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              child: Text(
+                                  "Edit",
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+
+                            ),
+                          ],
                         ),
                       ),
                     ),
