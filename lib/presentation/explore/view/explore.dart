@@ -119,6 +119,8 @@ class Explore extends GetView<ExploreController>{
                 },
               ),
 
+              SizedBox(height: 10,),
+
               //See more button
               GestureDetector(
                 onTap: () {
@@ -129,9 +131,9 @@ class Explore extends GetView<ExploreController>{
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.25),
+                    color: Theme.of(context).cardTheme.color,
                     border: Border.all(
-                      color: Colors.white,
+                      color: Colors.grey,
                       width: 1,
                     ),
                     borderRadius: BorderRadius.circular(30),
@@ -221,6 +223,8 @@ class Explore extends GetView<ExploreController>{
                 },
               ),
 
+
+              SizedBox(height: 10,),
               //See more button
               GestureDetector(
                 onTap: () {
@@ -231,9 +235,9 @@ class Explore extends GetView<ExploreController>{
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.25),
+                    color: Theme.of(context).cardTheme.color,
                     border: Border.all(
-                      color: Colors.white,
+                      color: Colors.grey,
                       width: 1,
                     ),
                     borderRadius: BorderRadius.circular(30),
