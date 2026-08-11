@@ -136,7 +136,9 @@ class Profile extends GetView<ProfileController>{
                               ),
                               child: Text(
                                   "Edit",
-                                style: Theme.of(context).textTheme.bodyMedium,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
                               ),
 
                             ),
@@ -158,6 +160,8 @@ class Profile extends GetView<ProfileController>{
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+
+                    // Followers, Following and Comments Box
                     Row(
                       children: [
                         Expanded(
@@ -173,6 +177,27 @@ class Profile extends GetView<ProfileController>{
                         ),
                       ],
                     ),
+
+                    SizedBox(height: 20,),
+
+                    // Stats Heading with right arrow
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Stats',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+
+                        IconButton(
+                            onPressed: (){},
+                            icon: Icon(
+                             Icons.keyboard_arrow_right_outlined,
+                              color: Theme.of(context).iconTheme.color,
+                            ),
+                        ),
+                      ],
+                    )
                   ],
                 ),
               ),
