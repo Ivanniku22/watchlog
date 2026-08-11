@@ -158,19 +158,21 @@ class Profile extends GetView<ProfileController>{
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     Text(
-                      'Your Title',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildStatBox(0, 'Following', context),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildStatBox(0, 'Followers', context),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildStatBox(0, 'Comments', context),
+                        ),
+                      ],
                     ),
-
-                    const SizedBox(height: 20),
-
-                    Text(
-                      'Your content goes here.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-
-                    const SizedBox(height: 500),
                   ],
                 ),
               ),
@@ -182,4 +184,33 @@ class Profile extends GetView<ProfileController>{
   }
 
 
+}
+
+
+
+Widget _buildStatBox(int number, String label, BuildContext context) {
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    decoration: BoxDecoration(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: Colors.grey.shade300,
+      ),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          number.toString(),
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ],
+    ),
+  );
 }
