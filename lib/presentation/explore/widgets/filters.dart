@@ -41,7 +41,7 @@ class _FiltersState extends State<Filters> {
                 vertical: 10,
               ),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.yellow : Colors.black,
+                color: isSelected ? Colors.yellow : Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
                   color: Colors.grey
