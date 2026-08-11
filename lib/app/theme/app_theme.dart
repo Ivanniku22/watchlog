@@ -51,6 +51,9 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: Colors.white
       ),
+      iconTheme: IconThemeData(
+        color: Colors.black,
+      )
     );
   }
 
@@ -129,6 +132,9 @@ class AppTheme {
       ),
       cardTheme: const CardThemeData(
         color: Colors.black,
+      ),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
       )
     );
 
