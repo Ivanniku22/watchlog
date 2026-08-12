@@ -110,7 +110,7 @@ class Profile extends GetView<ProfileController>{
                                 ),
                                 image: const DecorationImage(
                                   image: NetworkImage(
-                                    'https://i.pravatar.cc/300',
+                                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjy2s4zrQ_ZSf87QkQ6BciADKKx6_Qy_r3gBkoyKSBD_LAiz6JBphvmhrw&s=10',
                                   ),
                                   fit: BoxFit.cover,
                                 ),
@@ -197,6 +197,20 @@ class Profile extends GetView<ProfileController>{
                             ),
                         ),
                       ],
+                    ),
+
+                    SizedBox(height: 10,),
+
+                    Row(
+                      spacing: 20,
+                      children: [
+                        Expanded(
+                            child: _buildWatchBox(1, 2, 100, "TV Time", context)
+                        ),
+                        Expanded(
+                            child: _buildWatchBox(1, 2, 100, "TV Time", context)
+                        ),
+                      ],
                     )
                   ],
                 ),
@@ -234,6 +248,72 @@ Widget _buildStatBox(int number, String label, BuildContext context) {
         Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ],
+    ),
+  );
+}
+
+
+
+Widget _buildWatchBox(int month, int day , int hours, String label, BuildContext context) {
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    decoration: BoxDecoration(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: Colors.grey.shade300,
+      ),
+    ),
+    child: Column(
+      children: [
+        Row(
+          spacing: 10,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  month.toString(),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "Month",
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  day.toString(),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "Day",
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  hours.toString(),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "Hours",
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ],
         ),
       ],
     ),
