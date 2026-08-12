@@ -160,7 +160,6 @@ class Profile extends GetView<ProfileController>{
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     // Followers, Following and Comments Box
                     Row(
                       children: [
@@ -178,7 +177,7 @@ class Profile extends GetView<ProfileController>{
                       ],
                     ),
 
-                    SizedBox(height: 20,),
+                    const SizedBox(height: 20),
 
                     // Stats Heading with right arrow
                     Row(
@@ -188,30 +187,49 @@ class Profile extends GetView<ProfileController>{
                           'Stats',
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
-
                         IconButton(
-                            onPressed: (){},
-                            icon: Icon(
-                             Icons.keyboard_arrow_right_outlined,
-                              color: Theme.of(context).iconTheme.color,
-                            ),
+                          onPressed: () {},
+                          icon: Icon(
+                            Icons.keyboard_arrow_right_outlined,
+                            color: Theme.of(context).iconTheme.color,
+                          ),
                         ),
                       ],
                     ),
 
-                    SizedBox(height: 10,),
+                    const SizedBox(height: 10),
 
-                    Row(
-                      spacing: 20,
-                      children: [
-                        Expanded(
-                            child: _buildWatchBox(1, 2, 100, "TV Time", context)
-                        ),
-                        Expanded(
-                            child: _buildWatchBox(1, 2, 100, "TV Time", context)
-                        ),
-                      ],
-                    )
+                    // Horizontally scrolling stats
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 150,
+                            child: _buildWatchBox(
+                              1,
+                              2,
+                              100,
+                              "TV Time",
+                              context,
+                            ),
+                          ),
+
+                          const SizedBox(width: 20),
+
+                          SizedBox(
+                            width: 200,
+                            child: _buildWatchBox(
+                              1,
+                              2,
+                              100,
+                              "Episodes Watched",
+                              context,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -257,18 +275,46 @@ Widget _buildStatBox(int number, String label, BuildContext context) {
 
 
 Widget _buildWatchBox(int month, int day , int hours, String label, BuildContext context) {
-  return Container(
-    padding: const EdgeInsets.symmetric(vertical: 10),
-    decoration: BoxDecoration(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(
-        color: Colors.grey.shade300,
+  return Column(
+    children: [
+      // Top box
+      Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.grey.shade300,
+          ),
+        ),
+        child: Row(
+          spacing: 2,
+          children: [
+            IconButton(
+                onPressed: (){},
+                icon: Icon(Icons.live_tv_outlined)
+            ),
+
+            SizedBox(width: 10,),
+
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
       ),
-    ),
-    child: Column(
-      children: [
-        Row(
+      // Below box
+      Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.grey.shade300,
+          ),
+        ),
+        child: Row(
           spacing: 10,
           children: [
             Column(
@@ -315,7 +361,7 @@ Widget _buildWatchBox(int month, int day , int hours, String label, BuildContext
             ),
           ],
         ),
-      ],
-    ),
+      ),
+    ],
   );
 }
