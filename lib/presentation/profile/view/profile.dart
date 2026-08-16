@@ -12,9 +12,7 @@ class Profile extends GetView<ProfileController>{
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // ─────────────────────────────
-            // Cover image + buttons
-            // ─────────────────────────────
+
             SliverAppBar(
               expandedHeight: 200,
               pinned: false,
@@ -76,7 +74,7 @@ class Profile extends GetView<ProfileController>{
                                 onPressed: () {},
                                 icon: const Icon(
                                   Icons.more_horiz,
-                                  color: Colors.black,
+                                  color: Colors.white,
                                   size: 25,
                                 ),
                               ),
@@ -214,9 +212,7 @@ class Profile extends GetView<ProfileController>{
                               context,
                             ),
                           ),
-
-                          const SizedBox(width: 20),
-
+                          SizedBox(width: 4,),
                           SizedBox(
                             width: 200,
                             child: _buildWatchBox(
@@ -282,9 +278,8 @@ Widget _buildWatchBox(int month, int day , int hours, String label, BuildContext
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Colors.grey.shade300,
+            color: Colors.grey.shade500,
           ),
         ),
         child: Row(
@@ -309,9 +304,8 @@ Widget _buildWatchBox(int month, int day , int hours, String label, BuildContext
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Colors.grey.shade300,
+            color: Colors.grey.shade500,
           ),
         ),
         child: Padding(
