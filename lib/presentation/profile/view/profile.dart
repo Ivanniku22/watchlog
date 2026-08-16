@@ -226,6 +226,34 @@ class Profile extends GetView<ProfileController>{
                         ],
                       ),
                     ),
+
+                    const SizedBox(height: 20),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Shows',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        IconButton(
+                          onPressed: () {},
+                          icon: Icon(
+                            Icons.keyboard_arrow_right_outlined,
+                            color: Theme.of(context).iconTheme.color,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Shows List little scroll view
+                    ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (item, context){
+
+                        })
                   ],
                 ),
               ),
