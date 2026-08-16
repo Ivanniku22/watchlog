@@ -1,6 +1,11 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:watchlog/data/upcoming_movie_data.dart';
 import 'package:watchlog/presentation/profile/controller/profile_controller.dart';
+
+import '../../../data/show_data.dart';
 
 class Profile extends GetView<ProfileController>{
 
@@ -249,11 +254,66 @@ class Profile extends GetView<ProfileController>{
                     const SizedBox(height: 10),
 
                     // Shows List little scroll view
-                    ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (item, context){
+                    SizedBox(
+                      height: 200,
+                      child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: min(shows.length, 6),
+                          itemBuilder: (context, index){
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  shows[index].poster,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          }),
+                    ),
 
-                        })
+
+                    const SizedBox(height: 20),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Favourites',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        IconButton(
+                          onPressed: () {},
+                          icon: Icon(
+                            Icons.keyboard_arrow_right_outlined,
+                            color: Theme.of(context).iconTheme.color,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Favourites List little scroll view
+                    SizedBox(
+                      height: 200,
+                      child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: min(upcomingMovies.length, 6),
+                          itemBuilder: (context, index){
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  upcomingMovies[index].poster,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          }),
+                    )
                   ],
                 ),
               ),
