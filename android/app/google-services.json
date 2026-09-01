@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "858969678165",
+    "project_id": "watchlog-cecbb",
+    "storage_bucket": "watchlog-cecbb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:858969678165:android:eb6061f149bdb733284fdc",
+        "android_client_info": {
+          "package_name": "com.example.watchlog"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPlo9z8bYN1wt9DjsySM43H1hemGLOrEw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
