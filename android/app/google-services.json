@@ -12,7 +12,20 @@
           "package_name": "com.example.watchlog"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "858969678165-ob3u7ie9j5o9cnfbuihj6g6dhsdl25qk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.watchlog",
+            "certificate_hash": "8910d29d0c9f4a4b8b55c41da93bbbdda79bd5b9"
+          }
+        },
+        {
+          "client_id": "858969678165-51b91snunonak1i9rjfon4f73e8su783.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDPlo9z8bYN1wt9DjsySM43H1hemGLOrEw"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "858969678165-51b91snunonak1i9rjfon4f73e8su783.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "858969678165-v43kibt4dq4vveelliollcfcs258ijn2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.watchlog"
+              }
+            }
+          ]
         }
       }
     }
