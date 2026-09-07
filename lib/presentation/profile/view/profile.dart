@@ -74,14 +74,23 @@ class Profile extends GetView<ProfileController>{
                                 ),
                               ),
 
-                              // Three dots
-                              IconButton(
-                                onPressed: () {},
+                              PopupMenuButton<String>(
                                 icon: const Icon(
                                   Icons.more_horiz,
                                   color: Colors.white,
                                   size: 25,
                                 ),
+                                onSelected: (value) {
+                                  if (value == 'signOut') {
+                                    controller.signOut();
+                                  }
+                                },
+                                itemBuilder: (context) => const [
+                                  PopupMenuItem(
+                                    value: 'signOut',
+                                    child: Text('Sign out'),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -89,64 +98,93 @@ class Profile extends GetView<ProfileController>{
                       ),
                     ),
 
-                    // User Image
                     Align(
                       alignment: Alignment.bottomLeft,
                       child: Padding(
                         padding: const EdgeInsets.only(
                           left: 20,
+                          right: 20,
                           bottom: 10,
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            // Profile image
-                            Container(
-                              width: 70,
-                              height: 70,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 4,
-                                ),
-                                image: const DecorationImage(
-                                  image: NetworkImage(
-                                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjy2s4zrQ_ZSf87QkQ6BciADKKx6_Qy_r3gBkoyKSBD_LAiz6JBphvmhrw&s=10',
+                        child: Obx(() {
+                          final user = controller.user.value;
+                          final photoUrl = user?.photoUrl;
+                          final rawName = user?.name?.trim();
+                          final name = (rawName != null && rawName.isNotEmpty)
+                              ? rawName
+                              : 'WatchLog user';
+                          final hasPhoto =
+                              photoUrl != null && photoUrl.isNotEmpty;
+
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Container(
+                                width: 70,
+                                height: 70,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 4,
                                   ),
-                                  fit: BoxFit.cover,
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: hasPhoto
+                                    ? Image.network(
+                                        photoUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return _ProfileAvatarFallback(
+                                            name: name,
+                                          );
+                                        },
+                                      )
+                                    : _ProfileAvatarFallback(name: name),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ElevatedButton(
+                                      onPressed: () {},
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.transparent,
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        side: const BorderSide(
+                                          color: Colors.white,
+                                          width: 1,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Edit',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-
-                            const SizedBox(width: 12),
-
-                            // Edit button
-                            ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                side: const BorderSide(
-                                  color: Colors.white,
-                                  width: 1,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              child: Text(
-                                  "Edit",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
-                              ),
-
-                            ),
-                          ],
-                        ),
+                            ],
+                          );
+                        }),
                       ),
                     ),
                   ],
@@ -154,9 +192,7 @@ class Profile extends GetView<ProfileController>{
               ),
             ),
 
-            // ─────────────────────────────
             // Content
-            // ─────────────────────────────
             SliverToBoxAdapter(
               child: Container(
                 padding: const EdgeInsets.all(24),
@@ -449,4 +485,29 @@ Widget _buildWatchBox(int month, int day , int hours, String label, BuildContext
       ),
     ],
   );
+}
+
+class _ProfileAvatarFallback extends StatelessWidget {
+  const _ProfileAvatarFallback({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
+
+    return ColoredBox(
+      color: Colors.white24,
+      child: Center(
+        child: Text(
+          initial,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
 }
