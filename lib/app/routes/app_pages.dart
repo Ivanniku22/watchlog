@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 
 import '../../presentation/explore/bindings/explore_binding.dart';
 import '../../presentation/explore/view/explore.dart';
+import '../../presentation/login/bindings/login_binding.dart';
+import '../../presentation/login/view/login.dart';
 import '../../presentation/movies/bindings/movies_binding.dart';
 import '../../presentation/movies/view/movies.dart';
 import '../../presentation/profile/bindings/profile_binding.dart';
@@ -11,9 +13,15 @@ import '../../presentation/shows/view/shows_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
-  static const initial = AppRoutes.shows;
+  static const initial = AppRoutes.login;
 
   static final routes = [
+    GetPage(
+      name: AppRoutes.login,
+      page: () => const Login(),
+      binding: LoginBinding(),
+    ),
+
     GetPage(
       name: AppRoutes.shows,
       page: () => const ShowsView(),

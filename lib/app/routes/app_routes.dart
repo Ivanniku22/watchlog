@@ -1,4 +1,5 @@
 class AppRoutes {
+  static const login = '/login';
   static const shows = '/shows';
   static const movies = '/movies';
   static const explore = '/explore';
