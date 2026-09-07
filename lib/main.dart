@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'app/routes/app_pages.dart';
 import 'app/routes/app_routes.dart';
 import 'app/theme/app_theme.dart';
+import 'data/repositories/auth_repository.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -14,6 +15,8 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  Get.put(AuthRepository());
 
   final loggedIn = FirebaseAuth.instance.currentUser != null;
   runApp(WatchLogApp(
