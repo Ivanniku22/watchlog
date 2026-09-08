@@ -16,7 +16,9 @@ class Popular{
   factory Popular.fromJson(Map<String, dynamic> json){
     return Popular(
         page: json['page'],
-        results: [],
+        results: json['results']
+            .map((item) => TvShow.fromJson(item))
+            .toList(),
         totalPages: json['total_pages'],
         totalResults: json['total_results']
 
