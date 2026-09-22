@@ -107,7 +107,7 @@ class Explore extends GetView<ExploreController>{
                               ),
                               child: const Icon(
                                 Icons.add,
-                                color: const Color(0xFFFFD700),
+                                color: Color(0xFFFFD700),
                                 size: 18,
                               ),
                             ),
@@ -211,7 +211,7 @@ class Explore extends GetView<ExploreController>{
                               ),
                               child: const Icon(
                                 Icons.add,
-                                color: const Color(0xFFFFD700),
+                                color: Color(0xFFFFD700),
                                 size: 18,
                               ),
                             ),
