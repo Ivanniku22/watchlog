@@ -18,4 +18,21 @@ class TmdbRepository {
     return Popular.fromJson(response.data);
   }
 
+
+
+  Future<Popular> getPopularAnime() async {
+    final response = await tmdbService.getPopularAnime();
+    return Popular.fromJson(response.data);
+  }
+
+  Future<Popular> getTopRatedAnime() async {
+    final response = await tmdbService.getTopRatedAnime();
+    return Popular.fromJson(response.data);
+  }
+
+  Future<Popular> getNewAnime() async {
+    final response = await tmdbService.getNewAnime();
+    return Popular.fromJson(response.data);
+  }
+
 }

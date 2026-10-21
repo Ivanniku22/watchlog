@@ -302,7 +302,411 @@ class Explore extends GetView<ExploreController>{
                 ),
               ),
 
+              SizedBox(height: 20,),
+
+              // Popular Anime Title
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardTheme.color,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: Colors.grey.shade900,
+                    width: 1,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                  child: Text(
+                    'Popular Anime',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ),
+
+
+              SizedBox(height: 10,),
+
+
+              // Popular Anime's
+
+              Obx(() {
+                final anime = controller.popularAnime.value?.results ?? [];
+
+                final count = anime.length <
+                    controller.popularAnimeVisibleCount.value
+                    ? anime.length
+                    : controller.popularAnimeVisibleCount.value;
+
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: count,
+                  gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 3,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 0.8,
+                  ),
+                  itemBuilder: (context, index) {
+                    final show = anime[index];
+                    final posterPath = show.posterPath;
+
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: posterPath != null && posterPath.isNotEmpty
+                                ? Image.network(
+                              'https://image.tmdb.org/t/p/w500$posterPath',
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Center(
+                                  child: Icon(Icons.broken_image),
+                                );
+                              },
+                            )
+                                : const Center(
+                              child: Icon(Icons.movie),
+                            ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: GestureDetector(
+                              onTap: () {
+                                // TODO: Add anime to watchlist.
+                              },
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.25),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFFFFD700),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.add,
+                                  color: Color(0xFFFFD700),
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }),
+
+
+              SizedBox(height: 10,),
+
+              //See more button
+              GestureDetector(
+                onTap: () {
+                  final totalAnime =
+                      controller.popularAnime.value?.results.length ?? 0;
+
+                  if (controller.popularAnimeVisibleCount.value < totalAnime) {
+                    controller.popularAnimeVisibleCount.value =
+                        (controller.popularAnimeVisibleCount.value + 6)
+                            .clamp(0, 20);
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardTheme.color,
+                    border: Border.all(
+                      color: Colors.grey,
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Text(
+                    'See More',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ),
+
+
+              SizedBox(height: 20,),
+
+              // Top Rated Anime Title
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardTheme.color,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: Colors.grey.shade900,
+                    width: 1,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                  child: Text(
+                    'Top Rated Anime',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ),
+
+
+              SizedBox(height: 10,),
+
+
+              // Top Rated Anime's
+              Obx(() {
+                final anime = controller.topRatedAnime.value?.results ?? [];
+
+                final count = anime.length <
+                    controller.topRatedAnimeVisibleCount.value
+                    ? anime.length
+                    : controller.topRatedAnimeVisibleCount.value;
+
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: count,
+                  gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 3,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 0.8,
+                  ),
+                  itemBuilder: (context, index) {
+                    final show = anime[index];
+                    final posterPath = show.posterPath;
+
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: posterPath != null && posterPath.isNotEmpty
+                                ? Image.network(
+                              'https://image.tmdb.org/t/p/w500$posterPath',
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Center(
+                                  child: Icon(Icons.broken_image),
+                                );
+                              },
+                            )
+                                : const Center(
+                              child: Icon(Icons.movie),
+                            ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: GestureDetector(
+                              onTap: () {
+                                // TODO: Add anime to watchlist.
+                              },
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.25),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFFFFD700),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.add,
+                                  color: Color(0xFFFFD700),
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }),
+
+
+
+              SizedBox(height: 10,),
+
+              //See more button
+              GestureDetector(
+                onTap: () {
+                  final totalAnime =
+                      controller.topRatedAnime.value?.results.length ?? 0;
+
+                  if (controller.topRatedAnimeVisibleCount.value < totalAnime) {
+                    controller.topRatedAnimeVisibleCount.value =
+                        (controller.topRatedAnimeVisibleCount.value + 6)
+                            .clamp(0, 20);
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardTheme.color,
+                    border: Border.all(
+                      color: Colors.grey,
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Text(
+                    'See More',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ),
+
+
+              SizedBox(height: 20,),
+
+
+              // New Anime's Title
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardTheme.color,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: Colors.grey.shade900,
+                    width: 1,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                  child: Text(
+                    'New Animes',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ),
+
+
+              SizedBox(height: 10,),
+
+
+              // New Anime's
+
+              Obx(() {
+                final anime = controller.newAnime.value?.results ?? [];
+                final count = anime.length < controller.newAnimeVisibleCount.value
+                    ? anime.length
+                    : controller.newAnimeVisibleCount.value;
+
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: count,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 3,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 0.8,
+                  ),
+                  itemBuilder: (context, index) {
+                    final show = anime[index];
+                    final posterPath = show.posterPath;
+
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: posterPath != null && posterPath.isNotEmpty
+                                ? Image.network(
+                              'https://image.tmdb.org/t/p/w500$posterPath',
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                              const Center(
+                                child: Icon(Icons.broken_image),
+                              ),
+                            )
+                                : const Center(child: Icon(Icons.movie)),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: GestureDetector(
+                              onTap: () {
+                                // TODO: Add anime to watchlist.
+                              },
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.25),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFFFFD700),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.add,
+                                  color: Color(0xFFFFD700),
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }),
+
+
+
+
+              SizedBox(height: 10,),
+
+              //See more button
+
+              GestureDetector(
+                onTap: () {
+                  final totalAnime =
+                      controller.newAnime.value?.results.length ?? 0;
+
+                  if (controller.newAnimeVisibleCount.value < totalAnime) {
+                    controller.newAnimeVisibleCount.value =
+                        (controller.newAnimeVisibleCount.value + 6).clamp(0, 20);
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardTheme.color,
+                    border: Border.all(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Text(
+                    'See More',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ),
+
+
               SizedBox(height: 30,),
+
+
             ],
           ),
         ),

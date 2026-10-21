@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../data/models/tmdb_models/popular.dart';
 import '../../../data/repositories/tmdb_repostiory.dart';
-
+import 'package:flutter/foundation.dart';
 
 class ExploreController extends GetxController {
   final TmdbRepository tmdbRepository = Get.find<TmdbRepository>();
@@ -16,6 +16,14 @@ class ExploreController extends GetxController {
   final isLoadingMore = false.obs;
   final topRatedVisibleCount = 6.obs;
 
+  final popularAnime = Rxn<Popular>();
+  final topRatedAnime = Rxn<Popular>();
+  final newAnime = Rxn<Popular>();
+
+  final popularAnimeVisibleCount = 6.obs;
+  final topRatedAnimeVisibleCount = 6.obs;
+  final newAnimeVisibleCount = 6.obs;
+
 
 
   @override
@@ -23,6 +31,9 @@ class ExploreController extends GetxController {
     super.onInit();
     fetchPopularTvShows();
     fetchTopRatedTvShows();
+    fetchPopularAnime();
+    fetchTopRatedAnime();
+    fetchNewAnime();
   }
 
   Future<void> fetchPopularTvShows() async {
@@ -44,4 +55,36 @@ class ExploreController extends GetxController {
       print('Error details: $e');
     }
   }
+
+
+  Future<void> fetchPopularAnime() async {
+    try {
+      popularAnime.value =
+      await tmdbRepository.getPopularAnime();
+    } catch (e , stackTrace) {
+      debugPrint('Popular Anime Error: $e');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> fetchTopRatedAnime() async {
+    try {
+      topRatedAnime.value =
+      await tmdbRepository.getTopRatedAnime();
+    } catch (e) {
+      print('Error details: $e');
+    }
+  }
+
+  Future<void> fetchNewAnime() async {
+    try {
+      newAnime.value =
+      await tmdbRepository.getNewAnime();
+    } catch (e) {
+      print('Error details: $e');
+    }
+  }
+
+
+
 }
