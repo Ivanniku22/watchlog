@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 
 import '../../data/repositories/tmdb_repostiory.dart';
 import '../../presentation/explore/controller/explore_controller.dart';
+import '../../services/tmdb_client.dart';
 import '../../services/tmdb_service.dart';
 
 
