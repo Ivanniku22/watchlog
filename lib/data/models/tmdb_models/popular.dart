@@ -61,21 +61,22 @@ class TvShow{
 
   factory TvShow.fromJson(Map<String, dynamic> json) {
     return TvShow(
-      adult: json['adult'],
+      adult: json['adult'] ?? false,
       backdropPath: json['backdrop_path'],
-      genreIds: json['genre_ids'],
+      genreIds: List<int>.from(json['genre_ids'] ?? const []),
       id: json['id'],
-      originCountry: json['origin_country'],
-      originalLanguage: json['original_language'],
-      originalName: json['original_name'],
-      overview: json['overview'],
-      popularity: json['popularity'],
+      originCountry: List<String>.from(json['origin_country'] ?? const []),
+      originalLanguage: json['original_language'] ?? '',
+      originalName: json['original_name'] ?? '',
+      overview: json['overview'] ?? '',
+      popularity: (json['popularity'] as num?)?.toDouble() ?? 0,
       posterPath: json['poster_path'],
-      firstAirDate: json['first_air_date'],
-      softcore: json['softcore'],
-      name: json['name'],
-      voteAverage: json['vote_average'],
-      voteCount: json['vote_count'],
+      firstAirDate: json['first_air_date'] ?? '',
+      // TMDB popular TV results do not include this field.
+      softcore: json['softcore'] ?? false,
+      name: json['name'] ?? '',
+      voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0,
+      voteCount: json['vote_count'] ?? 0,
     );
   }
 }
