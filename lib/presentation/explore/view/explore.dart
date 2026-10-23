@@ -4,6 +4,7 @@ import 'package:watchlog/data/added_shows_data.dart';
 import 'package:watchlog/presentation/explore/controller/explore_controller.dart';
 import 'package:watchlog/presentation/explore/widgets/filters.dart';
 
+import '../../../app/routes/app_routes.dart';
 import '../../../data/trending_shows_data.dart';
 
 class Explore extends GetView<ExploreController>{
@@ -38,10 +39,10 @@ class Explore extends GetView<ExploreController>{
 
               SizedBox(height: 10,),
 
-              //Filters
-              Filters(),
+              // //Filters
+              // Filters(),
 
-              SizedBox(height: 15,),
+              // SizedBox(height: 15,),
 
               // Recommendations Title
               Container(
@@ -88,46 +89,54 @@ class Explore extends GetView<ExploreController>{
                     final show = shows[index];
                     final posterPath = show.posterPath;
 
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Stack(
-                        children: [
-                          Positioned.fill(
-                            child: posterPath != null && posterPath.isNotEmpty
-                                ? Image.network(
-                              'https://image.tmdb.org/t/p/w500$posterPath',
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                              const Center(child: Icon(Icons.broken_image)),
-                            )
-                                : const Center(child: Icon(Icons.movie)),
-                          ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: GestureDetector(
-                              onTap: () {
-                                // TODO: Add show
-                              },
-                              child: Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: const Color(0xFFFFD700),
+                    return GestureDetector(
+                      onTap: () {
+                        Get.toNamed(
+                          AppRoutes.showDetails,
+                          arguments: show,
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: posterPath != null && posterPath.isNotEmpty
+                                  ? Image.network(
+                                'https://image.tmdb.org/t/p/w500$posterPath',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                const Center(child: Icon(Icons.broken_image)),
+                              )
+                                  : const Center(child: Icon(Icons.movie)),
+                            ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: () {
+                                  // TODO: Add show
+                                },
+                                child: Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: const Color(0xFFFFD700),
+                                    ),
                                   ),
-                                ),
-                                child: const Icon(
-                                  Icons.add,
-                                  color: Color(0xFFFFD700),
-                                  size: 18,
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Color(0xFFFFD700),
+                                    size: 18,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -216,51 +225,59 @@ class Explore extends GetView<ExploreController>{
                     final show = topRatedShows[index];
                     final posterPath = show.posterPath;
 
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Stack(
-                        children: [
-                          Positioned.fill(
-                            child: posterPath != null && posterPath.isNotEmpty
-                                ? Image.network(
-                              'https://image.tmdb.org/t/p/w500$posterPath',
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Center(
-                                  child: Icon(Icons.broken_image),
-                                );
-                              },
-                            )
-                                : const Center(
-                              child: Icon(Icons.movie),
+                    return GestureDetector(
+                      onTap: () {
+                        Get.toNamed(
+                          AppRoutes.showDetails,
+                          arguments: show,
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: posterPath != null && posterPath.isNotEmpty
+                                  ? Image.network(
+                                'https://image.tmdb.org/t/p/w500$posterPath',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Center(
+                                    child: Icon(Icons.broken_image),
+                                  );
+                                },
+                              )
+                                  : const Center(
+                                child: Icon(Icons.movie),
+                              ),
                             ),
-                          ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: GestureDetector(
-                              onTap: () {
-                                // TODO: Add show
-                              },
-                              child: Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: const Color(0xFFFFD700),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: () {
+                                  // TODO: Add show
+                                },
+                                child: Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: const Color(0xFFFFD700),
+                                    ),
                                   ),
-                                ),
-                                child: const Icon(
-                                  Icons.add,
-                                  color: Color(0xFFFFD700),
-                                  size: 18,
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Color(0xFFFFD700),
+                                    size: 18,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -352,51 +369,59 @@ class Explore extends GetView<ExploreController>{
                     final show = anime[index];
                     final posterPath = show.posterPath;
 
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Stack(
-                        children: [
-                          Positioned.fill(
-                            child: posterPath != null && posterPath.isNotEmpty
-                                ? Image.network(
-                              'https://image.tmdb.org/t/p/w500$posterPath',
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Center(
-                                  child: Icon(Icons.broken_image),
-                                );
-                              },
-                            )
-                                : const Center(
-                              child: Icon(Icons.movie),
+                    return GestureDetector(
+                      onTap: () {
+                        Get.toNamed(
+                          AppRoutes.showDetails,
+                          arguments: show,
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: posterPath != null && posterPath.isNotEmpty
+                                  ? Image.network(
+                                'https://image.tmdb.org/t/p/w500$posterPath',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Center(
+                                    child: Icon(Icons.broken_image),
+                                  );
+                                },
+                              )
+                                  : const Center(
+                                child: Icon(Icons.movie),
+                              ),
                             ),
-                          ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: GestureDetector(
-                              onTap: () {
-                                // TODO: Add anime to watchlist.
-                              },
-                              child: Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: const Color(0xFFFFD700),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: () {
+                                  // TODO: Add anime to watchlist.
+                                },
+                                child: Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: const Color(0xFFFFD700),
+                                    ),
                                   ),
-                                ),
-                                child: const Icon(
-                                  Icons.add,
-                                  color: Color(0xFFFFD700),
-                                  size: 18,
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Color(0xFFFFD700),
+                                    size: 18,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -487,51 +512,59 @@ class Explore extends GetView<ExploreController>{
                     final show = anime[index];
                     final posterPath = show.posterPath;
 
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Stack(
-                        children: [
-                          Positioned.fill(
-                            child: posterPath != null && posterPath.isNotEmpty
-                                ? Image.network(
-                              'https://image.tmdb.org/t/p/w500$posterPath',
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Center(
-                                  child: Icon(Icons.broken_image),
-                                );
-                              },
-                            )
-                                : const Center(
-                              child: Icon(Icons.movie),
+                    return GestureDetector(
+                      onTap: () {
+                        Get.toNamed(
+                          AppRoutes.showDetails,
+                          arguments: show,
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: posterPath != null && posterPath.isNotEmpty
+                                  ? Image.network(
+                                'https://image.tmdb.org/t/p/w500$posterPath',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Center(
+                                    child: Icon(Icons.broken_image),
+                                  );
+                                },
+                              )
+                                  : const Center(
+                                child: Icon(Icons.movie),
+                              ),
                             ),
-                          ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: GestureDetector(
-                              onTap: () {
-                                // TODO: Add anime to watchlist.
-                              },
-                              child: Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: const Color(0xFFFFD700),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: () {
+                                  // TODO: Add anime to watchlist.
+                                },
+                                child: Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: const Color(0xFFFFD700),
+                                    ),
                                   ),
-                                ),
-                                child: const Icon(
-                                  Icons.add,
-                                  color: Color(0xFFFFD700),
-                                  size: 18,
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Color(0xFFFFD700),
+                                    size: 18,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -622,48 +655,56 @@ class Explore extends GetView<ExploreController>{
                     final show = anime[index];
                     final posterPath = show.posterPath;
 
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Stack(
-                        children: [
-                          Positioned.fill(
-                            child: posterPath != null && posterPath.isNotEmpty
-                                ? Image.network(
-                              'https://image.tmdb.org/t/p/w500$posterPath',
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                              const Center(
-                                child: Icon(Icons.broken_image),
-                              ),
-                            )
-                                : const Center(child: Icon(Icons.movie)),
-                          ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: GestureDetector(
-                              onTap: () {
-                                // TODO: Add anime to watchlist.
-                              },
-                              child: Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: const Color(0xFFFFD700),
-                                  ),
+                    return GestureDetector(
+                      onTap: () {
+                        Get.toNamed(
+                          AppRoutes.showDetails,
+                          arguments: show,
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: posterPath != null && posterPath.isNotEmpty
+                                  ? Image.network(
+                                'https://image.tmdb.org/t/p/w500$posterPath',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                const Center(
+                                  child: Icon(Icons.broken_image),
                                 ),
-                                child: const Icon(
-                                  Icons.add,
-                                  color: Color(0xFFFFD700),
-                                  size: 18,
+                              )
+                                  : const Center(child: Icon(Icons.movie)),
+                            ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: () {
+                                  // TODO: Add anime to watchlist.
+                                },
+                                child: Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: const Color(0xFFFFD700),
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Color(0xFFFFD700),
+                                    size: 18,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
