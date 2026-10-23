@@ -14,348 +14,346 @@ class Profile extends GetView<ProfileController>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
+      body: CustomScrollView(
+        slivers: [
 
-            SliverAppBar(
-              expandedHeight: 200,
-              pinned: false,
-              automaticallyImplyLeading: false,
-              elevation: 0,
-              backgroundColor: Colors.transparent,
+          SliverAppBar(
+            expandedHeight: 200,
+            pinned: false,
+            automaticallyImplyLeading: false,
+            elevation: 0,
+            backgroundColor: Colors.transparent,
 
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
-                  children: [
-                    // Cover image
-                    Positioned.fill(
-                      child: Image.network(
-                        'https://static.zerochan.net/86.Eighty-Six.full.3740349.jpg',
-                        fit: BoxFit.cover,
-                      ),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                children: [
+                  // Cover image
+                  Positioned.fill(
+                    child: Image.network(
+                      'https://static.zerochan.net/86.Eighty-Six.full.3740349.jpg',
+                      fit: BoxFit.cover,
                     ),
+                  ),
 
-                    // Slight dark overlay
-                    Positioned.fill(
-                      child: Container(
-                        color: Colors.black.withValues(alpha: 0.5),
-                      ),
+                  // Slight dark overlay
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.5),
                     ),
+                  ),
 
-                    // Buttons over the image
-                    SafeArea(
-                      child: Align(
-                        alignment: Alignment.topRight,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 5,
-                            vertical: 5,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Bell
-                              Container(
-                                width: 35,
-                                height: 35,
-                                decoration: const BoxDecoration(
-                                  color: Colors.yellow,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: IconButton(
-                                  padding: EdgeInsets.zero,
-                                  onPressed: () {},
-                                  icon: const Icon(
-                                    Icons.notifications_none_outlined,
-                                    color: Colors.black,
-                                    size: 20,
-                                  ),
+                  // Buttons over the image
+                  SafeArea(
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 5,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Bell
+                            Container(
+                              width: 35,
+                              height: 35,
+                              decoration: const BoxDecoration(
+                                color: Colors.yellow,
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: () {},
+                                icon: const Icon(
+                                  Icons.notifications_none_outlined,
+                                  color: Colors.black,
+                                  size: 20,
                                 ),
                               ),
+                            ),
 
-                              PopupMenuButton<String>(
-                                icon: const Icon(
-                                  Icons.more_horiz,
-                                  color: Colors.white,
-                                  size: 25,
+                            PopupMenuButton<String>(
+                              icon: const Icon(
+                                Icons.more_horiz,
+                                color: Colors.white,
+                                size: 25,
+                              ),
+                              onSelected: (value) {
+                                if (value == 'signOut') {
+                                  controller.signOut();
+                                }
+                              },
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(
+                                  value: 'signOut',
+                                  child: Text('Sign out'),
                                 ),
-                                onSelected: (value) {
-                                  if (value == 'signOut') {
-                                    controller.signOut();
-                                  }
-                                },
-                                itemBuilder: (context) => const [
-                                  PopupMenuItem(
-                                    value: 'signOut',
-                                    child: Text('Sign out'),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                      ),
+                      child: Obx(() {
+                        final user = controller.user.value;
+                        final photoUrl = user?.photoUrl;
+                        final rawName = user?.name?.trim();
+                        final name = (rawName != null && rawName.isNotEmpty)
+                            ? rawName
+                            : 'WatchLog user';
+                        final hasPhoto =
+                            photoUrl != null && photoUrl.isNotEmpty;
+
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Container(
+                              width: 70,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 4,
+                                ),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: hasPhoto
+                                  ? Image.network(
+                                      photoUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return _ProfileAvatarFallback(
+                                          name: name,
+                                        );
+                                      },
+                                    )
+                                  : _ProfileAvatarFallback(name: name),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  ElevatedButton(
+                                    onPressed: () {},
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      side: const BorderSide(
+                                        color: Colors.white,
+                                        width: 1,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(20),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Edit',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
+                        );
+                      }),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Content
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Followers, Following and Comments Box
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatBox(0, 'Following', context),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildStatBox(0, 'Followers', context),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildStatBox(0, 'Comments', context),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Stats Heading with right arrow
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Stats',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: Icon(
+                          Icons.keyboard_arrow_right_outlined,
+                          color: Theme.of(context).iconTheme.color,
                         ),
                       ),
-                    ),
+                    ],
+                  ),
 
-                    Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: 20,
-                          right: 20,
-                          bottom: 10,
+                  const SizedBox(height: 10),
+
+                  // Horizontally scrolling stats
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 150,
+                          child: _buildWatchBox(
+                            1,
+                            2,
+                            100,
+                            "TV Time",
+                            context,
+                          ),
                         ),
-                        child: Obx(() {
-                          final user = controller.user.value;
-                          final photoUrl = user?.photoUrl;
-                          final rawName = user?.name?.trim();
-                          final name = (rawName != null && rawName.isNotEmpty)
-                              ? rawName
-                              : 'WatchLog user';
-                          final hasPhoto =
-                              photoUrl != null && photoUrl.isNotEmpty;
+                        SizedBox(width: 4,),
+                        SizedBox(
+                          width: 200,
+                          child: _buildWatchBox(
+                            1,
+                            2,
+                            100,
+                            "Episodes Watched",
+                            context,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Container(
-                                width: 70,
-                                height: 70,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 4,
-                                  ),
-                                ),
-                                clipBehavior: Clip.antiAlias,
-                                child: hasPhoto
-                                    ? Image.network(
-                                        photoUrl,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return _ProfileAvatarFallback(
-                                            name: name,
-                                          );
-                                        },
-                                      )
-                                    : _ProfileAvatarFallback(name: name),
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Shows',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: Icon(
+                          Icons.keyboard_arrow_right_outlined,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Shows List little scroll view
+                  SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: min(shows.length, 6),
+                        itemBuilder: (context, index){
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                shows[index].poster,
+                                fit: BoxFit.cover,
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    ElevatedButton(
-                                      onPressed: () {},
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.transparent,
-                                        foregroundColor: Colors.white,
-                                        elevation: 0,
-                                        side: const BorderSide(
-                                          color: Colors.white,
-                                          width: 1,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        'Edit',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                            ),
                           );
                         }),
+                  ),
+
+
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Favourites',
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                    ),
-                  ],
-                ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: Icon(
+                          Icons.keyboard_arrow_right_outlined,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Favourites List little scroll view
+                  SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: min(upcomingMovies.length, 6),
+                        itemBuilder: (context, index){
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                upcomingMovies[index].poster,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          );
+                        }),
+                  )
+                ],
               ),
             ),
-
-            // Content
-            SliverToBoxAdapter(
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Followers, Following and Comments Box
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatBox(0, 'Following', context),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _buildStatBox(0, 'Followers', context),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _buildStatBox(0, 'Comments', context),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Stats Heading with right arrow
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Stats',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        IconButton(
-                          onPressed: () {},
-                          icon: Icon(
-                            Icons.keyboard_arrow_right_outlined,
-                            color: Theme.of(context).iconTheme.color,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Horizontally scrolling stats
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 150,
-                            child: _buildWatchBox(
-                              1,
-                              2,
-                              100,
-                              "TV Time",
-                              context,
-                            ),
-                          ),
-                          SizedBox(width: 4,),
-                          SizedBox(
-                            width: 200,
-                            child: _buildWatchBox(
-                              1,
-                              2,
-                              100,
-                              "Episodes Watched",
-                              context,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Shows',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        IconButton(
-                          onPressed: () {},
-                          icon: Icon(
-                            Icons.keyboard_arrow_right_outlined,
-                            color: Theme.of(context).iconTheme.color,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Shows List little scroll view
-                    SizedBox(
-                      height: 200,
-                      child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: min(shows.length, 6),
-                          itemBuilder: (context, index){
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  shows[index].poster,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            );
-                          }),
-                    ),
-
-
-                    const SizedBox(height: 20),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Favourites',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        IconButton(
-                          onPressed: () {},
-                          icon: Icon(
-                            Icons.keyboard_arrow_right_outlined,
-                            color: Theme.of(context).iconTheme.color,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Favourites List little scroll view
-                    SizedBox(
-                      height: 200,
-                      child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: min(upcomingMovies.length, 6),
-                          itemBuilder: (context, index){
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  upcomingMovies[index].poster,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            );
-                          }),
-                    )
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

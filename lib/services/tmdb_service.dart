@@ -51,4 +51,10 @@ class TmdbService {
     );
   }
 
+  Future<Response> getTvShowDetails(int id) {
+    return _dio.get(
+        '/tv/$id',
+    );
+  }
+
 }

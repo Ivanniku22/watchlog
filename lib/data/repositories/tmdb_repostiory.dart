@@ -35,4 +35,9 @@ class TmdbRepository {
     return Popular.fromJson(response.data);
   }
 
+  Future<Map<String, dynamic>> getTvShowDetails(int id) async {
+    final response = await tmdbService.getTvShowDetails(id);
+    return response.data as Map<String, dynamic>;
+  }
+
 }
