@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import 'package:watchlog/presentation/show_details/bindings/show_details_bindings.dart';
+import 'package:watchlog/presentation/show_details/view/show_details_view.dart';
 
 import '../../presentation/explore/bindings/explore_binding.dart';
 import '../../presentation/explore/view/explore.dart';
@@ -42,6 +44,13 @@ class AppPages {
       name: AppRoutes.profile,
       page: () => const Profile(),
       binding: ProfileBinding(),
+    ),
+    GetPage(
+        name: AppRoutes.showDetails,
+        page: () => const ShowDetailsView(),
+        binding: ShowDetailsBindings(),
+        transition: Transition.downToUp,
+        transitionDuration: const Duration(milliseconds: 350),
     ),
   ];
 }
