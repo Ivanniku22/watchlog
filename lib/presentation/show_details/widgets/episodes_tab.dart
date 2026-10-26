@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:watchlog/presentation/show_details/controller/show_details_controller.dart';
 import 'package:watchlog/presentation/show_details/widgets/episode_card.dart';
+import 'package:watchlog/presentation/show_details/widgets/season_episode_list.dart';
 
 class EpisodesTab extends GetView<ShowDetailsController> {
   const EpisodesTab({super.key});
@@ -85,18 +86,7 @@ class EpisodesTab extends GetView<ShowDetailsController> {
 
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                    child: Column(
-                      children: episodes.map((episode) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: EpisodeCard(
-                            episode: Map<String, dynamic>.from(
-                              episode as Map,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                    child: SeasonEpisodeList(episodes: episodes),
                   );
                 }),
               ],
