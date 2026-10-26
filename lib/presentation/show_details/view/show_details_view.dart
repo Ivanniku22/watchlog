@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:watchlog/presentation/show_details/controller/show_details_controller.dart';
 
+import '../widgets/about_tab.dart';
+
 class ShowDetailsView extends GetView<ShowDetailsController> {
   const ShowDetailsView({super.key});
 
@@ -205,17 +207,16 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
                       Tab(text: 'EPISODES'),
                     ],
                   ),
+                  MediaQuery.paddingOf(context).top,
                 ),
               ),
             ];
           },
 
           // Tab content
-          body: const TabBarView(
+          body: TabBarView(
             children: [
-              Center(
-                child: Text('About content will go here.'),
-              ),
+              const AboutTab(),
               Center(
                 child: Text('Episodes content will go here.'),
               ),
@@ -228,16 +229,15 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
 }
 
 // Keeps the TabBar pinned beneath the collapsing header.
+
 class _TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
+  final double topInset;
 
-  _TabBarHeaderDelegate(this.tabBar);
+  _TabBarHeaderDelegate(this.tabBar, this.topInset);
 
   @override
-  double get minExtent =>
-      tabBar.preferredSize.height +
-          WidgetsBinding.instance.platformDispatcher.views.first.padding.top /
-              WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
+  double get minExtent => tabBar.preferredSize.height + topInset;
 
   @override
   double get maxExtent => minExtent;
@@ -250,13 +250,20 @@ class _TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
       ) {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
-      padding: EdgeInsets.zero,
-      child: tabBar,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: topInset),
+          tabBar,
+        ],
+      ),
     );
   }
 
   @override
   bool shouldRebuild(_TabBarHeaderDelegate oldDelegate) {
-    return oldDelegate.tabBar != tabBar;
+    return oldDelegate.tabBar != tabBar ||
+        oldDelegate.topInset != topInset;
   }
 }
+
