@@ -11,6 +11,39 @@ class AboutTab extends GetView<ShowDetailsController> {
     return Obx(() {
       final details = controller.showDetails.value;
 
+      final nextEpisode = details?['next_episode_to_air'] as Map<String, dynamic>?;
+
+      final episodeTitle = nextEpisode?['name'] as String?;
+      final episodeImage = nextEpisode?['still_path'] as String?;
+      final airDate = nextEpisode?['air_date'] as String?;
+
+      String airingDay = '';
+
+      if (airDate != null && airDate.isNotEmpty) {
+        final date = DateTime.tryParse(airDate);
+
+        if (date != null) {
+          const weekdays = [
+            'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+            'Friday', 'Saturday', 'Sunday',
+          ];
+
+          airingDay = weekdays[date.weekday - 1];
+        }
+      }
+
+      String formatDate(String dateString) {
+        final date = DateTime.tryParse(dateString);
+
+        if (date == null) return dateString;
+
+        final day = date.day.toString().padLeft(2, '0');
+        final month = date.month.toString().padLeft(2, '0');
+        final year = date.year.toString();
+
+        return '$day-$month-$year';
+      }
+
       if (controller.isLoadingDetails.value) {
         return const Center(
           child: CircularProgressIndicator(),
@@ -36,6 +69,60 @@ class AboutTab extends GetView<ShowDetailsController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (nextEpisode != null) ...[
+              Card(
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (episodeImage != null && episodeImage.isNotEmpty)
+                      Image.network(
+                        'https://image.tmdb.org/t/p/w780$episodeImage',
+                        width: double.infinity,
+                        height: 180,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                        const SizedBox(
+                          height: 100,
+                          child: Center(child: Icon(Icons.broken_image)),
+                        ),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'NEXT EPISODE',
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            episodeTitle ?? 'Episode title unavailable',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (airDate != null && airDate.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              '${airingDay.isNotEmpty ? '$airingDay • ' : ''}${formatDate(airDate)}',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
             Text(
               'Overview',
               style: Theme.of(context).textTheme.titleLarge,

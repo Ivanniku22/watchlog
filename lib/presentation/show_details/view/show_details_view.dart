@@ -207,7 +207,7 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
                       Tab(text: 'EPISODES'),
                     ],
                   ),
-                  MediaQuery.paddingOf(context).top,
+                  MediaQuery.paddingOf(context).top * 0.7,
                 ),
               ),
             ];
