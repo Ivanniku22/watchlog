@@ -14,6 +14,13 @@ class ShowDetailsController extends GetxController{
   Rxn<Map<String, dynamic>>();
 
   final isLoadingDetails = true.obs;
+  final loadedSeasonNumbers = <int>{}.obs;
+  final loadingSeasonNumbers = <int>{}.obs;
+
+  final RxList<Map<String, dynamic>> seasonDetails =
+      <Map<String, dynamic>>[].obs;
+
+  final isLoadingSeasons = true.obs;
 
   @override
   void onInit() {
@@ -31,4 +38,33 @@ class ShowDetailsController extends GetxController{
       isLoadingDetails.value = false;
     }
   }
+
+
+  Future<void> fetchSeasonDetails(int seasonNumber) async {
+    if (loadedSeasonNumbers.contains(seasonNumber) ||
+        loadingSeasonNumbers.contains(seasonNumber)) {
+      return;
+    }
+
+    loadingSeasonNumbers.add(seasonNumber);
+
+    try {
+      final result = await tmdbRepository.getSeasonDetails(
+        show.id,
+        seasonNumber,
+      );
+
+      seasonDetails.removeWhere(
+            (season) => season['season_number'] == seasonNumber,
+      );
+
+      seasonDetails.add(result);
+      loadedSeasonNumbers.add(seasonNumber);
+    } catch (e) {
+      print('Failed to fetch season $seasonNumber: $e');
+    } finally {
+      loadingSeasonNumbers.remove(seasonNumber);
+    }
+  }
+
 }

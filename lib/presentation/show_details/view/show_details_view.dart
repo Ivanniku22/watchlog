@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:watchlog/presentation/show_details/controller/show_details_controller.dart';
 
 import '../widgets/about_tab.dart';
+import '../widgets/episodes_tab.dart';
 
 class ShowDetailsView extends GetView<ShowDetailsController> {
   const ShowDetailsView({super.key});
@@ -216,10 +217,8 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
           // Tab content
           body: TabBarView(
             children: [
-              const AboutTab(),
-              Center(
-                child: Text('Episodes content will go here.'),
-              ),
+              AboutTab(),
+              EpisodesTab(),
             ],
           ),
         ),

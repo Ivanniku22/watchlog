@@ -57,4 +57,8 @@ class TmdbService {
     );
   }
 
+  Future<Response> getSeasonDetails(int seriesId, int seasonNumber) {
+    return _dio.get('/tv/$seriesId/season/$seasonNumber');
+  }
+
 }

@@ -40,4 +40,16 @@ class TmdbRepository {
     return response.data as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> getSeasonDetails(
+      int seriesId,
+      int seasonNumber,
+      ) async {
+    final response = await tmdbService.getSeasonDetails(
+      seriesId,
+      seasonNumber,
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
 }

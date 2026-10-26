@@ -56,6 +56,9 @@ class AboutTab extends GetView<ShowDetailsController> {
         );
       }
 
+      final rating = (details['vote_average'] as num?)?.toDouble() ?? 0.0;
+      final starRating = (rating / 2).clamp(0.0, 5.0);
+
       final overview = details['overview'] as String? ?? '';
       final status = details['status'] as String? ?? 'Unknown';
       final firstAirDate =
@@ -69,6 +72,8 @@ class AboutTab extends GetView<ShowDetailsController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
+            // Next Episode Code
             if (nextEpisode != null) ...[
               Card(
                 clipBehavior: Clip.antiAlias,
@@ -123,11 +128,15 @@ class AboutTab extends GetView<ShowDetailsController> {
               ),
               const SizedBox(height: 24),
             ],
+
+            //Title
             Text(
               'Overview',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
+
+            //Over View Widget
             Text(
               overview.isEmpty
                   ? 'No overview available.'
@@ -137,11 +146,43 @@ class AboutTab extends GetView<ShowDetailsController> {
 
             const SizedBox(height: 24),
 
+
+            // Rating stars
+            Row(
+              children: [
+                ...List.generate(5, (index) {
+                  final starPosition = index + 1;
+
+                  return Icon(
+                    starRating >= starPosition
+                        ? Icons.star
+                        : starRating >= starPosition - 0.5
+                        ? Icons.star_half
+                        : Icons.star_border,
+                    color: starRating >= starPosition - 0.5
+                        ? Colors.amber
+                        : Colors.grey,
+                    size: 24,
+                  );
+                }),
+                const SizedBox(width: 8),
+                Text(
+                  '${rating.toStringAsFixed(1)}/10',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
             Text(
               'Show Information',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 12),
+
+            // Show information widgets
 
             _InfoRow(label: 'Status', value: status),
             _InfoRow(label: 'First aired', value: firstAirDate),
@@ -180,9 +221,7 @@ class _InfoRow extends StatelessWidget {
             width: 130,
             child: Text(
               label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
           Expanded(
