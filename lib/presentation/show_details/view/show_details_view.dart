@@ -8,189 +8,255 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
 
   @override
   Widget build(BuildContext context) {
-    final show = controller.show;
-
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-
-          SliverAppBar(
-            expandedHeight: 200,
-            pinned: false,
-            automaticallyImplyLeading: false,
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                children: [
-                  // Cover image
-                  Positioned.fill(
-                    child: Image.network(
-                      'https://image.tmdb.org/t/p/w780${controller.show.backdropPath}',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-
-                  // Slight dark overlay
-                  Positioned.fill(
-                    child: Container(
-                      color: Colors.black.withValues(alpha: 0.3),
-                    ),
-                  ),
-
-                  // Buttons over the image
-                  SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 5,
-                        vertical: 5,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        body: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                expandedHeight: 200,
+                pinned: false,
+                automaticallyImplyLeading: false,
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+                forceElevated: innerBoxIsScrolled,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Stack(
+                    children: [
+                      // Backdrop image
+                      Positioned.fill(
+                        child: Image.network(
+                          'https://image.tmdb.org/t/p/w780${controller.show.backdropPath}',
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(color: Colors.grey.shade900);
+                          },
+                        ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Down button
-                          IconButton(
-                            onPressed: () => Get.back(),
-                            icon: const Icon(
-                              Icons.keyboard_arrow_down,
-                              color: Colors.white,
-                              size: 30,
-                            ),
-                          ),
 
-                          // Three-dot menu
-                          PopupMenuButton<String>(
-                            icon: const Icon(
-                              Icons.more_horiz,
-                              color: Colors.white,
-                              size: 25,
-                            ),
-                            itemBuilder: (context) => const [
-                              PopupMenuItem(
-                                value: 'watchlist',
-                                child: Text('Add to watchlist'),
+                      // Dark overlay
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.black.withValues(alpha: 0.3),
+                        ),
+                      ),
+
+                      // Back and menu buttons
+                      SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 5,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
+                                onPressed: () => Get.back(),
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                              ),
+                              PopupMenuButton<String>(
+                                icon: const Icon(
+                                  Icons.more_horiz,
+                                  color: Colors.white,
+                                  size: 25,
+                                ),
+                                itemBuilder: (context) => const [
+                                  PopupMenuItem(
+                                    value: 'watchlist',
+                                    child: Text('Add to watchlist'),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
 
-                  // Show title , episode, duration and genres
+                      // Title and metadata
+                      Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                controller.show.name,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
 
-                  Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Show title
-                          Text(
-                            controller.show.name,
-                            maxLines: 2,
-                            overflow:  TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white
-                            ),
-                          ),
+                              // Metadata loading skeleton and details
+                              Obx(() {
+                                if (controller.isLoadingDetails.value) {
+                                  Widget skeletonBar(double width) {
+                                    return Container(
+                                      width: width,
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.withValues(
+                                          alpha: 0.35,
+                                        ),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    );
+                                  }
 
-                          const SizedBox(height: 8),
+                                  return Row(
+                                    children: [
+                                      skeletonBar(65),
+                                      const SizedBox(width: 10),
+                                      skeletonBar(75),
+                                      const SizedBox(width: 10),
+                                      skeletonBar(55),
+                                    ],
+                                  );
+                                }
 
-                          // Seasons, episodes, and genres
+                                final details =
+                                    controller.showDetails.value;
 
-                          Obx(() {
-                            if (controller.isLoadingDetails.value) {
-                              // Loading skeleton
-                              Widget skeletonBar(double width) {
-                                return Container(
-                                  width: width,
-                                  height: 12,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.withValues(alpha: 0.25),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
+                                if (details == null) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                final seasons =
+                                details['number_of_seasons'];
+                                final episodes =
+                                details['number_of_episodes'];
+
+                                final genres =
+                                    (details['genres'] as List<dynamic>?)
+                                        ?.map(
+                                          (genre) =>
+                                      genre['name'] as String,
+                                    )
+                                        .toList() ??
+                                        [];
+
+                                const metadataStyle = TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white,
                                 );
-                              }
 
-                              return Row(
-                                children: [
-                                  skeletonBar(65),
-                                  const SizedBox(width: 10),
-                                  skeletonBar(75),
-                                  const SizedBox(width: 10),
-                                  skeletonBar(55),
-                                ],
-                              );
-                            }
-
-                            final details = controller.showDetails.value;
-
-                            if (details == null) {
-                              return const SizedBox.shrink();
-                            }
-
-                            final seasons = details['number_of_seasons'];
-                            final episodes = details['number_of_episodes'];
-
-                            final genres = (details['genres'] as List<dynamic>?)
-                                ?.map((genre) => genre['name'] as String)
-                                .toList() ??
-                                [];
-
-                            return Wrap(
-                              spacing: 8,
-                              runSpacing: 6,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                if (seasons != null) Text('$seasons Seasons •', style:  TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white
-                                ),),
-                                if (episodes != null) Text('$episodes Episodes •', style:  TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white
-                                ),),
-                                ...genres.map((genre) => Text(genre, style:  TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white
-                                ),)),
-                              ],
-                            );
-                          }),
-
-                        ],
+                                return Wrap(
+                                  spacing: 8,
+                                  runSpacing: 6,
+                                  crossAxisAlignment:
+                                  WrapCrossAlignment.center,
+                                  children: [
+                                    if (seasons != null)
+                                      Text('$seasons Seasons •',
+                                          style: metadataStyle),
+                                    if (episodes != null)
+                                      Text('$episodes Episodes •',
+                                          style: metadataStyle),
+                                    ...genres.map(
+                                          (genre) => Text(
+                                        genre,
+                                        style: metadataStyle,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-
-                ],
+                ),
               ),
-            ),
-          ),
 
-          // Body Content
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                ],
+              // Pinned tabs beneath the collapsible header
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _TabBarHeaderDelegate(
+                  TabBar(
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    dividerColor: Colors.transparent,
+                    labelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                    unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                    labelStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    tabs: const [
+                      Tab(text: 'ABOUT'),
+                      Tab(text: 'EPISODES'),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ];
+          },
+
+          // Tab content
+          body: const TabBarView(
+            children: [
+              Center(
+                child: Text('About content will go here.'),
+              ),
+              Center(
+                child: Text('Episodes content will go here.'),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
+  }
+}
+
+// Keeps the TabBar pinned beneath the collapsing header.
+class _TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar tabBar;
+
+  _TabBarHeaderDelegate(this.tabBar);
+
+  @override
+  double get minExtent =>
+      tabBar.preferredSize.height +
+          WidgetsBinding.instance.platformDispatcher.views.first.padding.top /
+              WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
+
+  @override
+  double get maxExtent => minExtent;
+
+  @override
+  Widget build(
+      BuildContext context,
+      double shrinkOffset,
+      bool overlapsContent,
+      ) {
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      padding: EdgeInsets.zero,
+      child: tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_TabBarHeaderDelegate oldDelegate) {
+    return oldDelegate.tabBar != tabBar;
   }
 }
