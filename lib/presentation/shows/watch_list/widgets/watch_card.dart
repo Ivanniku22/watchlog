@@ -69,7 +69,7 @@ class _WatchCardState extends State<WatchCard> {
                       color: Theme.of(context).cardTheme.color,
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(
-                        color: Colors.white, // Border color
+                        color: Colors.grey.shade900, // Border color
                         width: 1,
                       )
                     ),
