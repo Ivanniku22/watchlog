@@ -1,6 +1,4 @@
-import 'package:dio/dio.dart';
 import 'package:get/get.dart';
-
 import '../../../data/models/tmdb_models/popular.dart';
 import '../../../data/repositories/tmdb_repostiory.dart';
 import 'package:flutter/foundation.dart';
@@ -42,7 +40,8 @@ class ExploreController extends GetxController {
 
       popularTvShows.value = await tmdbRepository.getPopularTvShows();
     } catch (e) {
-      print('Error details: $e');
+      debugPrint('Error details: $e');
+
     } finally {
       isLoading.value = false;
     }
@@ -52,7 +51,7 @@ class ExploreController extends GetxController {
     try {
       topRatedTvShows.value = await tmdbRepository.getTopRatedTvShows();
     } catch (e) {
-      print('Error details: $e');
+      debugPrint('Error details: $e');
     }
   }
 
@@ -72,7 +71,7 @@ class ExploreController extends GetxController {
       topRatedAnime.value =
       await tmdbRepository.getTopRatedAnime();
     } catch (e) {
-      print('Error details: $e');
+      debugPrint('Error details: $e');
     }
   }
 
@@ -81,7 +80,7 @@ class ExploreController extends GetxController {
       newAnime.value =
       await tmdbRepository.getNewAnime();
     } catch (e) {
-      print('Error details: $e');
+      debugPrint('Error details: $e');
     }
   }
 

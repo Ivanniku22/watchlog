@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
 import '../../../data/models/tmdb_models/popular.dart';
@@ -33,7 +34,7 @@ class ShowDetailsController extends GetxController{
       final details = await tmdbRepository.getTvShowDetails(show.id);
       showDetails.value = details;
     } catch (e) {
-      print('Failed to fetch show details: $e');
+      debugPrint('Failed to fetch show details: $e');
     } finally {
       isLoadingDetails.value = false;
     }
@@ -61,7 +62,7 @@ class ShowDetailsController extends GetxController{
       seasonDetails.add(result);
       loadedSeasonNumbers.add(seasonNumber);
     } catch (e) {
-      print('Failed to fetch season $seasonNumber: $e');
+      debugPrint('Failed to fetch season $seasonNumber: $e');
     } finally {
       loadingSeasonNumbers.remove(seasonNumber);
     }

@@ -5,4 +5,5 @@ class AppRoutes {
   static const explore = '/explore';
   static const profile = '/profile';
   static const showDetails = '/show-details';
+  static const episodeDetails = '/episode-details';
 }

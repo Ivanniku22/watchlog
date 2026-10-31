@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 
 import '../../data/repositories/tmdb_repostiory.dart';
+import '../../presentation/episodes/controller/episode_progress_controller.dart';
 import '../../presentation/explore/controller/explore_controller.dart';
 import '../../services/tmdb_client.dart';
 import '../../services/tmdb_service.dart';
@@ -21,5 +22,7 @@ class AppBinding extends Bindings {
     );
 
     Get.put<ExploreController>(ExploreController());
+
+    Get.put<EpisodeProgressController>(EpisodeProgressController());
   }
 }

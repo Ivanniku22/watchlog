@@ -37,7 +37,7 @@ class _SeasonEpisodeListState extends State<SeasonEpisodeList> {
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: EpisodeCard(episode: episode),
+              child: EpisodeCard(episode: episode, onTap: () {  },),
             );
           },
         ),

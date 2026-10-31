@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:watchlog/data/added_shows_data.dart';
 import 'package:watchlog/presentation/explore/controller/explore_controller.dart';
-import 'package:watchlog/presentation/explore/widgets/filters.dart';
-
 import '../../../app/routes/app_routes.dart';
-import '../../../data/trending_shows_data.dart';
 
 class Explore extends GetView<ExploreController>{
 

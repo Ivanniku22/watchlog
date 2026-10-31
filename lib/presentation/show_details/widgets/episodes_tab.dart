@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:watchlog/presentation/show_details/controller/show_details_controller.dart';
-import 'package:watchlog/presentation/show_details/widgets/episode_card.dart';
 import 'package:watchlog/presentation/show_details/widgets/season_episode_list.dart';
 
 class EpisodesTab extends GetView<ShowDetailsController> {
