@@ -85,7 +85,10 @@ class EpisodesTab extends GetView<ShowDetailsController> {
 
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                    child: SeasonEpisodeList(episodes: episodes),
+                    child: SeasonEpisodeList(
+                      episodes: episodes,
+                      show: controller.show,
+                    ),
                   );
                 }),
               ],
