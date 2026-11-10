@@ -1,8 +1,6 @@
 import 'package:get/get.dart';
 import 'package:watchlog/data/models/tmdb_models/popular.dart';
 
-import '../../show_details/controller/show_details_controller.dart';
-
 class EpisodeDetailsController extends GetxController {
   final Map<String, dynamic> arguments =
   Get.arguments as Map<String, dynamic>;
@@ -21,6 +19,24 @@ class EpisodeDetailsController extends GetxController {
       episodes[currentIndex.value]['episode_number'] as int;
 
   int get totalEpisodes => episodes.length;
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    final selectedEpisode =
+    arguments['episode'] as Map<String, dynamic>;
+
+    final selectedEpisodeId = selectedEpisode['id'];
+
+    final index = episodes.indexWhere(
+          (episode) => episode['id'] == selectedEpisodeId,
+    );
+
+    if (index != -1) {
+      currentIndex.value = index;
+    }
+  }
 
   void changeEpisode(int index) {
     if (index < 0 || index >= episodes.length) return;
