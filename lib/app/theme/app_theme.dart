@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AppTheme {
   static const Color primary = Color(0xFF2563EB);
@@ -17,8 +18,13 @@ class AppTheme {
       fontFamily: 'Inter',
       colorScheme: colorScheme,
       scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-      appBarTheme: const AppBarTheme(
+      appBarTheme:  const AppBarTheme(
         centerTitle: false,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Color(0xFF0F172A),
@@ -68,6 +74,13 @@ class AppTheme {
       fontFamily: 'Inter',
       colorScheme: colorScheme,
       scaffoldBackgroundColor: const Color(0xFF020617),
+      appBarTheme: const AppBarTheme(
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+        ),
+      ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
           fontSize: 32,
