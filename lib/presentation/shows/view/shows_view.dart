@@ -6,7 +6,7 @@ import 'package:watchlog/presentation/explore/view/explore.dart';
 import 'package:watchlog/presentation/movies/view/movies.dart';
 import 'package:watchlog/presentation/profile/view/profile.dart';
 
-import '../controller/shows_view_model.dart';
+import '../controller/shows_view_controller.dart';
 
 class ShowsView extends GetView<ShowsViewModel> {
   const ShowsView({super.key});

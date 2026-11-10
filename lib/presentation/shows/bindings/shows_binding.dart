@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/show_repository.dart';
 import '../../profile/controller/profile_controller.dart';
-import '../controller/shows_view_model.dart';
+import '../controller/shows_view_controller.dart';
 import '../upcoming/controller/upcoming_controller.dart';
 import '../watch_list/controller/watchlist_controller.dart';
 
