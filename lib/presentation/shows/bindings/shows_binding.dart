@@ -10,11 +10,15 @@ import '../watch_list/controller/watchlist_controller.dart';
 class ShowsBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<ShowRepository>(() => ShowRepository());
+    // Get.lazyPut<ShowRepository>(() => ShowRepository());
     Get.lazyPut<ShowsViewModel>(
       () => ShowsViewModel(showRepository: Get.find<ShowRepository>()),
     );
-    Get.lazyPut<WatchlistController>(() => WatchlistController());
+    Get.lazyPut<WatchlistController>(
+          () => WatchlistController(
+        showRepository: Get.find<ShowRepository>(),
+      ),
+    );
     Get.lazyPut<UpcomingController>(() => UpcomingController());
     Get.lazyPut<ProfileController>(
       () => ProfileController(authRepository: Get.find<AuthRepository>()),
