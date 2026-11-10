@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 
@@ -11,6 +12,10 @@ import '../../services/tmdb_service.dart';
 class AppBinding extends Bindings {
   @override
   void dependencies() {
+    Get.lazyPut<FirebaseFirestore>(
+          () => FirebaseFirestore.instance,
+    );
+
     Get.lazyPut<Dio>(createTmdbDio);
 
     Get.lazyPut<TmdbService>(
