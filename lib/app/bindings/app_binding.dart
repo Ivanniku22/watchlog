@@ -35,15 +35,16 @@ class AppBinding extends Bindings {
           () => TmdbRepository(Get.find<TmdbService>()),
     );
 
-    Get.put<ExploreController>(ExploreController());
-
-    Get.put<EpisodeProgressController>(EpisodeProgressController());
-
     Get.lazyPut<WatchHistoryRepository>(
           () => WatchHistoryRepository(
         firestore: Get.find<FirebaseFirestore>(),
         auth: FirebaseAuth.instance,
       ),
     );
+
+    Get.put<ExploreController>(ExploreController());
+
+    Get.put<EpisodeProgressController>(EpisodeProgressController());
+
   }
 }

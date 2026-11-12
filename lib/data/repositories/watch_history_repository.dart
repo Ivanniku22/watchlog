@@ -68,4 +68,37 @@ class WatchHistoryRepository {
 
     await _watchedEpisodes.doc(documentId).delete();
   }
+
+  Future<void> importWatchedEpisodes(
+      List<Map<String, dynamic>> episodes,
+      ) async {
+    for (var i = 0; i < episodes.length; i += 500) {
+      final batch = _firestore.batch();
+      final chunk = episodes.skip(i).take(500);
+
+      for (final episode in chunk) {
+        final documentId =
+            '${episode['showId']}_S${episode['seasonNumber']}_E${episode['episodeNumber']}';
+
+        final documentRef = _watchedEpisodes.doc(documentId);
+
+        batch.set(
+          documentRef,
+          {
+            'showId': episode['showId'],
+            'showTitle': episode['showTitle'],
+            'seasonNumber': episode['seasonNumber'],
+            'episodeNumber': episode['episodeNumber'],
+            'episodeTitle': episode['episodeTitle'],
+            'watchedAt': Timestamp.fromDate(
+              episode['watchedAt'] as DateTime,
+            ),
+          },
+          SetOptions(merge: true),
+        );
+      }
+
+      await batch.commit();
+    }
+  }
 }

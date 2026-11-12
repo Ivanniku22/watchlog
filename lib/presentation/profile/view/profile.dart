@@ -348,7 +348,101 @@ class Profile extends GetView<ProfileController>{
                             ),
                           );
                         }),
-                  )
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Importing files
+                  Obx(() {
+                    final importing = controller.isImporting.value;
+
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.history_rounded),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Import TV Time History',
+                                  style: Theme.of(context).textTheme.titleMedium,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          Text(
+                            'Import your previously watched episodes '
+                                'from your TV Time CSV export.',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: importing
+                                  ? null
+                                  : controller.importTvTimeData,
+                              icon: Icon(
+                                importing
+                                    ? Icons.hourglass_top
+                                    : Icons.upload_file,
+                              ),
+                              label: Text(
+                                importing ? 'Importing...' : 'Import CSV',
+                              ),
+                            ),
+                          ),
+
+                          if (importing) ...[
+                            const SizedBox(height: 14),
+
+                            LinearProgressIndicator(
+                              value: controller.importProgress.value,
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            Text(
+                              controller.importStatus.value,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+
+                          if (controller.importStatus.value ==
+                              'Import completed!') ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              '${controller.importedCount.value} episodes imported',
+                              style: const TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              '${controller.skippedCount.value} episodes skipped',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  }),
+
                 ],
               ),
             ),
