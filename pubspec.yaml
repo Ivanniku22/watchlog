@@ -44,6 +44,8 @@ dependencies:
   dio: ^5.11.1
   flutter_dotenv: ^6.0.1
   cloud_firestore: ^6.10.2
+  file_picker: ^13.3.3
+  csv: ^8.0.0
 #  cached_network_image: ^3.4.1
 
 dev_dependencies:

@@ -9,6 +9,7 @@ import '../../presentation/explore/controller/explore_controller.dart';
 import '../../services/tmdb_client.dart';
 import '../../services/tmdb_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../data/repositories/watch_history_repository.dart';
 
 class AppBinding extends Bindings {
   @override
@@ -37,5 +38,12 @@ class AppBinding extends Bindings {
     Get.put<ExploreController>(ExploreController());
 
     Get.put<EpisodeProgressController>(EpisodeProgressController());
+
+    Get.lazyPut<WatchHistoryRepository>(
+          () => WatchHistoryRepository(
+        firestore: Get.find<FirebaseFirestore>(),
+        auth: FirebaseAuth.instance,
+      ),
+    );
   }
 }
