@@ -44,6 +44,8 @@ class _SeasonEpisodeListState extends State<SeasonEpisodeList> {
               padding: const EdgeInsets.only(bottom: 12),
               child: EpisodeCard(
                 episode: episode,
+                showId: widget.show.id,
+                showTitle: widget.show.name,
                 onTap: () {
                   Get.toNamed(
                     AppRoutes.episodeDetails,

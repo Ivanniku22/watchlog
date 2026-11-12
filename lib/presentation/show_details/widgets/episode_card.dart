@@ -3,33 +3,55 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:watchlog/presentation/episodes/controller/episode_progress_controller.dart';
 
-class EpisodeCard extends StatelessWidget {
+class EpisodeCard extends StatefulWidget {
   final Map<String, dynamic> episode;
   final VoidCallback onTap;
+  final int showId;
+  final String showTitle;
 
-   EpisodeCard({
+   const EpisodeCard({
     super.key,
     required this.episode,
      required this.onTap,
+     required this.showId,
+     required this.showTitle,
   });
 
+  @override
+  State<EpisodeCard> createState() => _EpisodeCardState();
+}
+
+class _EpisodeCardState extends State<EpisodeCard> {
   final EpisodeProgressController progressController =
   Get.find<EpisodeProgressController>();
 
   @override
+  void initState() {
+    super.initState();
+
+    final seasonNumber = widget.episode['season_number'] as int;
+    final episodeNumber = widget.episode['episode_number'] as int;
+
+    progressController.loadEpisodeStatus(
+      showId: widget.showId,
+      seasonNumber: seasonNumber,
+      episodeNumber: episodeNumber,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final name = episode['name'] as String? ?? 'Untitled Episode';
-    final episodeNumber = episode['episode_number'] ?? '?';
-    final seasonNumber = episode['season_number'] ?? '?';
-    final stillPath = episode['still_path'] as String?;
-    final episodeId = episode['id'] as int;
+    final name = widget.episode['name'] as String? ?? 'Untitled Episode';
+    final episodeNumber = widget.episode['episode_number'] ?? '?';
+    final seasonNumber = widget.episode['season_number'] ?? '?';
+    final stillPath = widget.episode['still_path'] as String?;
 
     final imageUrl = stillPath != null && stillPath.isNotEmpty
         ? 'https://image.tmdb.org/t/p/w300$stillPath'
         : null;
 
     return InkWell(
-      onTap: onTap,
+      onTap: widget.onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(
         height: 100,
@@ -87,15 +109,25 @@ class EpisodeCard extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Obx(() {
-              final isWatched =
-              progressController.isWatched(episodeId);
+              final isWatched = progressController.isWatched(
+                showId: widget.showId,
+                seasonNumber: widget.episode['season_number'] as int,
+                episodeNumber: widget.episode['episode_number'] as int,
+              );
 
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
                     onTap: () {
-                      progressController.toggleWatched(episodeId);
+                      progressController.toggleWatched(
+                        showId: widget.showId,
+                        showTitle: widget.showTitle,
+                        seasonNumber: widget.episode['season_number'] as int,
+                        episodeNumber: widget.episode['episode_number'] as int,
+                        episodeTitle:
+                        widget.episode['name'] as String? ?? 'Untitled Episode',
+                      );
                     },
                     child: Container(
                       width: 34,

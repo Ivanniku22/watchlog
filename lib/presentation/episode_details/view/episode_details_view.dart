@@ -111,7 +111,6 @@ class EpisodeDetailsView extends GetView<EpisodeDetailsController> {
           final rating =
               (episode['vote_average'] as num?)?.toDouble() ?? 0;
           final runtime = episode['runtime'] as int?;
-          final episodeId = episode['id'] as int;
 
           final progressController =
           Get.find<EpisodeProgressController>();
@@ -327,17 +326,27 @@ class EpisodeDetailsView extends GetView<EpisodeDetailsController> {
 
                             // TV Time-style watched toggle.
                             Obx(() {
-                              final watched =
-                              progressController.isWatched(episodeId);
+                              final seasonNumber = episode['season_number'] as int;
+                              final episodeNumber = episode['episode_number'] as int;
+
+                              final watched = progressController.isWatched(
+                                showId: controller.show.id,
+                                seasonNumber: seasonNumber,
+                                episodeNumber: episodeNumber,
+                              );
 
                               return GestureDetector(
                                 onTap: () {
-                                  progressController
-                                      .toggleWatched(episodeId);
+                                  progressController.toggleWatched(
+                                    showId: controller.show.id,
+                                    showTitle: controller.show.name,
+                                    seasonNumber: seasonNumber,
+                                    episodeNumber: episodeNumber,
+                                    episodeTitle: episode['name'] as String? ?? 'Untitled Episode',
+                                  );
                                 },
                                 child: AnimatedContainer(
-                                  duration:
-                                  const Duration(milliseconds: 200),
+                                  duration: const Duration(milliseconds: 200),
                                   width: 36,
                                   height: 36,
                                   decoration: BoxDecoration(

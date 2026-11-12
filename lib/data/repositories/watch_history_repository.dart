@@ -58,4 +58,14 @@ class WatchHistoryRepository {
 
     return document.exists;
   }
+
+  Future<void> markEpisodeUnwatched({
+    required int showId,
+    required int seasonNumber,
+    required int episodeNumber,
+  }) async {
+    final documentId = '${showId}_S${seasonNumber}_E$episodeNumber';
+
+    await _watchedEpisodes.doc(documentId).delete();
+  }
 }
