@@ -437,6 +437,43 @@ class Profile extends GetView<ProfileController>{
                               '${controller.skippedCount.value} episodes skipped',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
+
+                            if (controller.skipReasons.isNotEmpty) ...[
+                              const SizedBox(height: 12),
+
+                              const Divider(),
+
+                              Text(
+                                'Skip breakdown',
+                                style: Theme.of(context).textTheme.titleSmall,
+                              ),
+
+                              const SizedBox(height: 8),
+
+                              ...controller.skipReasons.entries.map((entry) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          entry.key,
+                                          style: Theme.of(context).textTheme.bodySmall,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        entry.value.toString(),
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
+                            ],
                           ],
                         ],
                       ),

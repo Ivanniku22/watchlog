@@ -1,6 +1,7 @@
 
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:csv/csv.dart';
 import '../../../app/routes/app_routes.dart';
@@ -8,6 +9,8 @@ import '../../../data/models/app_user.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/tmdb_repostiory.dart';
 import '../../../data/repositories/watch_history_repository.dart';
+import 'package:dio/dio.dart';
+
 
 class ProfileController extends GetxController {
   ProfileController({AuthRepository? authRepository})
@@ -21,7 +24,7 @@ class ProfileController extends GetxController {
 
   final user = Rxn<AppUser>();
   final isSigningOut = false.obs;
-
+  final skipReasons = <String, int>{}.obs;
   final isImporting = false.obs;
   final importProgress = 0.0.obs;
   final importedCount = 0.obs;
@@ -35,11 +38,12 @@ class ProfileController extends GetxController {
   }
 
 
+
+
   Future<void> importTvTimeData() async {
     if (isImporting.value) return;
 
     try {
-      // Pick the CSV file.
       final pickedFile = await FilePicker.pickFile(
         type: FileType.custom,
         allowedExtensions: ['csv'],
@@ -47,14 +51,36 @@ class ProfileController extends GetxController {
 
       if (pickedFile == null) return;
 
-      // Start importing.
+      final shouldImport = await Get.dialog<bool>(
+        AlertDialog(
+          title: const Text('Confirm Import'),
+          content: Text(
+            'Are you sure you want to import "${pickedFile.name}"?\n\n'
+                'This may take several minutes depending on the '
+                'number of episodes.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(result: false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Get.back(result: true),
+              child: const Text('Import'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldImport != true) return;
+
       isImporting.value = true;
       importProgress.value = 0;
       importedCount.value = 0;
       skippedCount.value = 0;
+      skipReasons.clear();
       importStatus.value = 'Reading CSV file...';
 
-      // Read and decode the CSV.
       final bytes = await pickedFile.readAsBytes();
 
       final csvText = utf8.decode(
@@ -90,7 +116,6 @@ class ProfileController extends GetxController {
 
       final dataRows = rows.skip(1).toList();
 
-      // Cache TMDB results to avoid repeated API calls.
       final showCache = <String, int?>{};
       final episodeCache = <String, Map<int, String>>{};
       final episodesToImport = <Map<String, dynamic>>[];
@@ -100,13 +125,19 @@ class ProfileController extends GetxController {
 
         try {
           final title = _cell(row, titleIndex);
-          final seasonNumber = int.tryParse(_cell(row, seasonIndex));
-          final episodeNumber = int.tryParse(_cell(row, episodeIndex));
+
+          final seasonNumber = int.tryParse(
+            _cell(row, seasonIndex),
+          );
+
+          final episodeNumber = int.tryParse(
+            _cell(row, episodeIndex),
+          );
 
           if (title.isEmpty ||
               seasonNumber == null ||
               episodeNumber == null) {
-            skippedCount.value++;
+            _recordSkipped('Invalid CSV row');
             importProgress.value = (i + 1) / dataRows.length;
             continue;
           }
@@ -128,14 +159,15 @@ class ProfileController extends GetxController {
             )
                 .toList();
 
-            showCache[titleKey] =
-            exactMatches.length == 1 ? exactMatches.first.id : null;
+            showCache[titleKey] = exactMatches.length == 1
+                ? exactMatches.first.id
+                : null;
           }
 
           final showId = showCache[titleKey];
 
           if (showId == null) {
-            skippedCount.value++;
+            _recordSkipped('Show not found or ambiguous');
             importProgress.value = (i + 1) / dataRows.length;
             continue;
           }
@@ -144,12 +176,20 @@ class ProfileController extends GetxController {
           final seasonKey = '${showId}_$seasonNumber';
 
           if (!episodeCache.containsKey(seasonKey)) {
+            // DEBUG: Log the show and season being requested.
+            debugPrint('===== TMDB SEASON REQUEST =====');
+            debugPrint('Show title: $title');
+            debugPrint('TMDB show ID: $showId');
+            debugPrint('Season number: $seasonNumber');
+
             final details = await _tmdbRepository.getSeasonDetails(
               showId,
               seasonNumber,
             );
 
-            final seasonEpisodes = details['episodes'] as List? ?? [];
+            final seasonEpisodes =
+                details['episodes'] as List? ?? [];
+
             final episodeTitles = <int, String>{};
 
             for (final item in seasonEpisodes) {
@@ -165,17 +205,20 @@ class ProfileController extends GetxController {
             episodeCache[seasonKey] = episodeTitles;
           }
 
-          final episodeTitle = episodeCache[seasonKey]?[episodeNumber];
+          final episodeTitle =
+          episodeCache[seasonKey]?[episodeNumber];
 
           if (episodeTitle == null) {
-            skippedCount.value++;
+            _recordSkipped('Season or episode not found');
             importProgress.value = (i + 1) / dataRows.length;
             continue;
           }
 
           final watchedAt = watchedAtIndex == -1
               ? DateTime.now()
-              : DateTime.tryParse(_cell(row, watchedAtIndex)) ??
+              : DateTime.tryParse(
+            _cell(row, watchedAtIndex),
+          ) ??
               DateTime.now();
 
           episodesToImport.add({
@@ -186,14 +229,25 @@ class ProfileController extends GetxController {
             'episodeTitle': episodeTitle,
             'watchedAt': watchedAt,
           });
-        } catch (_) {
-          skippedCount.value++;
+        } catch (e) {
+          debugPrint('===== IMPORT ERROR =====');
+          debugPrint('CSV row: ${i + 2}');
+
+          if (e is DioException) {
+            debugPrint('Request URL: ${e.requestOptions.uri}');
+            debugPrint('Status code: ${e.response?.statusCode}');
+            debugPrint('TMDB response: ${e.response?.data}');
+          } else {
+            debugPrint('Error details: $e');
+          }
+
+          _recordSkipped('TMDB/API or processing error');
         }
 
         importProgress.value = (i + 1) / dataRows.length;
       }
 
-      // Save the matched episodes to Firestore.
+      // Save matched episodes to Firestore.
       importStatus.value = 'Saving watched episodes...';
 
       if (episodesToImport.isNotEmpty) {
@@ -212,6 +266,15 @@ class ProfileController extends GetxController {
             '${skippedCount.value} skipped.',
         snackPosition: SnackPosition.BOTTOM,
       );
+
+      // Print a breakdown of skipped episodes.
+      debugPrint('===== IMPORT SKIP REPORT =====');
+
+      for (final entry in skipReasons.entries) {
+        debugPrint('${entry.key}: ${entry.value}');
+      }
+
+      debugPrint('==============================');
     } catch (e) {
       importStatus.value = 'Import failed';
 
@@ -224,6 +287,8 @@ class ProfileController extends GetxController {
       isImporting.value = false;
     }
   }
+
+
 
   int _findColumn(List<String> headers, List<String> names) {
     return headers.indexWhere((header) => names.contains(header));
@@ -257,5 +322,11 @@ class ProfileController extends GetxController {
     } finally {
       isSigningOut.value = false;
     }
+  }
+
+  void _recordSkipped(String reason) {
+    skippedCount.value++;
+
+    skipReasons[reason] = (skipReasons[reason] ?? 0) + 1;
   }
 }
