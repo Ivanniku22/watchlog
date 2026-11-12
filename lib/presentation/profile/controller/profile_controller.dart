@@ -39,10 +39,7 @@ class ProfileController extends GetxController {
 
 
 
-
   Future<void> importTvTimeData() async {
-    if (isImporting.value) return;
-
     try {
       final pickedFile = await FilePicker.pickFile(
         type: FileType.custom,
@@ -51,13 +48,12 @@ class ProfileController extends GetxController {
 
       if (pickedFile == null) return;
 
-      final shouldImport = await Get.dialog<bool>(
+      final confirmed = await Get.dialog<bool>(
         AlertDialog(
-          title: const Text('Confirm Import'),
-          content: Text(
-            'Are you sure you want to import "${pickedFile.name}"?\n\n'
-                'This may take several minutes depending on the '
-                'number of episodes.',
+          title: const Text('Import TV Time History'),
+          content: const Text(
+            'This will import your watched episodes into your '
+                'WatchLog account. Continue?',
           ),
           actions: [
             TextButton(
@@ -72,7 +68,7 @@ class ProfileController extends GetxController {
         ),
       );
 
-      if (shouldImport != true) return;
+      if (confirmed != true) return;
 
       isImporting.value = true;
       importProgress.value = 0;
@@ -82,89 +78,126 @@ class ProfileController extends GetxController {
       importStatus.value = 'Reading CSV file...';
 
       final bytes = await pickedFile.readAsBytes();
-
-      final csvText = utf8.decode(
-        bytes,
-        allowMalformed: true,
-      );
-
-      final rows = CsvDecoder().convert(csvText);
+      final csvText = utf8.decode(bytes, allowMalformed: true);
+      final rows = const CsvDecoder().convert(csvText);
 
       if (rows.length < 2) {
-        throw Exception('The CSV file is empty or invalid.');
+        throw Exception('The CSV file contains no data.');
       }
 
       final headers = rows.first
           .map((value) => value.toString().trim().toLowerCase())
           .toList();
 
-      final titleIndex = _findColumn(headers, ['title']);
-      final seasonIndex = _findColumn(headers, ['season']);
-      final episodeIndex = _findColumn(headers, ['episode']);
-      final watchedAtIndex = _findColumn(
-        headers,
-        ['watched_at', 'watched at'],
-      );
+      final titleColumn = _findColumn(headers, [
+        'title',
+        'show',
+        'show title',
+        'name',
+      ]);
 
-      if (titleIndex == -1 ||
-          seasonIndex == -1 ||
-          episodeIndex == -1) {
+      final seasonColumn = _findColumn(headers, [
+        'season',
+        'season number',
+      ]);
+
+      final episodeColumn = _findColumn(headers, [
+        'episode',
+        'episode number',
+      ]);
+
+      final watchedAtColumn = _findColumn(headers, [
+        'watched_at',
+        'watched at',
+        'watched',
+        'date watched',
+      ]);
+
+      if (titleColumn == -1 ||
+          seasonColumn == -1 ||
+          episodeColumn == -1) {
         throw Exception(
-          'CSV must contain title, season and episode columns.',
+          'Could not find the required title, season, or episode columns.',
         );
       }
 
       final dataRows = rows.skip(1).toList();
 
-      final showCache = <String, int?>{};
-      final episodeCache = <String, Map<int, String>>{};
       final episodesToImport = <Map<String, dynamic>>[];
+
+      // Cache TMDB show IDs.
+      final showCache = <String, int?>{};
+
+      // Cache episode titles using the TMDB season number.
+      final episodeCache = <String, Map<int, String>>{};
+
+      // Dragon Ball Super TV Time-to-TMDB episode mapping.
+      const dragonBallEpisodeOffsets = {
+        1: 0,
+        2: 14,
+        3: 27,
+        4: 46,
+        5: 76,
+      };
+
+      const dragonBallSeasonEpisodeCounts = {
+        1: 14,
+        2: 13,
+        3: 19,
+        4: 30,
+        5: 55,
+      };
 
       for (var i = 0; i < dataRows.length; i++) {
         final row = dataRows[i];
 
         try {
-          final title = _cell(row, titleIndex);
-
-          final seasonNumber = int.tryParse(
-            _cell(row, seasonIndex),
-          );
-
-          final episodeNumber = int.tryParse(
-            _cell(row, episodeIndex),
-          );
+          final title = _cell(row, titleColumn);
+          final seasonText = _cell(row, seasonColumn);
+          final episodeText = _cell(row, episodeColumn);
 
           if (title.isEmpty ||
-              seasonNumber == null ||
-              episodeNumber == null) {
+              seasonText.isEmpty ||
+              episodeText.isEmpty) {
             _recordSkipped('Invalid CSV row');
             importProgress.value = (i + 1) / dataRows.length;
             continue;
           }
 
-          // Search TMDB only once for each title.
-          final titleKey = title.toLowerCase();
+          final seasonNumber = int.tryParse(seasonText);
+          final episodeNumber = int.tryParse(episodeText);
 
-          if (!showCache.containsKey(titleKey)) {
-            importStatus.value = 'Matching show: $title';
+          if (seasonNumber == null ||
+              episodeNumber == null ||
+              seasonNumber < 1 ||
+              episodeNumber < 1) {
+            _recordSkipped('Invalid CSV row');
+            importProgress.value = (i + 1) / dataRows.length;
+            continue;
+          }
+
+          final normalizedTitle = _normalizeTitle(title);
+
+          // Search for each show only once.
+          if (!showCache.containsKey(normalizedTitle)) {
+            importStatus.value = 'Finding $title...';
 
             final searchResults =
             await _tmdbRepository.searchTvShows(title);
 
-            final exactMatches = searchResults.results
-                .where(
+            final matches = searchResults.results.where(
                   (show) =>
-              _normalizeTitle(show.name) ==
-                  _normalizeTitle(title),
-            )
-                .toList();
+              _normalizeTitle(show.name) == normalizedTitle,
+            ).toList();
 
-            showCache[titleKey] = exactMatches.length == 1
-                ? exactMatches.first.id
-                : null;
+            if (matches.length == 1) {
+              showCache[normalizedTitle] = matches.first.id;
+            } else {
+              showCache[normalizedTitle] = null;
+            }
           }
 
-          final showId = showCache[titleKey];
+          final showId = showCache[normalizedTitle];
 
           if (showId == null) {
             _recordSkipped('Show not found or ambiguous');
@@ -172,19 +205,57 @@ class ProfileController extends GetxController {
             continue;
           }
 
-          // Fetch each season only once.
-          final seasonKey = '${showId}_$seasonNumber';
+          // Start with the original TV Time numbering.
+          var tmdbSeasonNumber = seasonNumber;
+          var tmdbEpisodeNumber = episodeNumber;
 
+          // Convert Dragon Ball Super numbering BEFORE
+          // creating the season key or making the API request.
+          if (normalizedTitle ==
+              _normalizeTitle('Dragon Ball Super')) {
+            final offset =
+            dragonBallEpisodeOffsets[seasonNumber];
+
+            final episodeCount =
+            dragonBallSeasonEpisodeCounts[seasonNumber];
+
+            if (offset == null ||
+                episodeCount == null ||
+                episodeNumber > episodeCount) {
+              _recordSkipped(
+                'Invalid Dragon Ball Super episode number',
+              );
+              importProgress.value = (i + 1) / dataRows.length;
+              continue;
+            }
+
+            tmdbSeasonNumber = 1;
+            tmdbEpisodeNumber = offset + episodeNumber;
+          }
+
+          debugPrint('===== EPISODE MAPPING =====');
+          debugPrint('Show: $title');
+          debugPrint('Original season: $seasonNumber');
+          debugPrint('Original episode: $episodeNumber');
+          debugPrint('TMDB season: $tmdbSeasonNumber');
+          debugPrint('TMDB episode: $tmdbEpisodeNumber');
+
+          // IMPORTANT: This key uses the converted TMDB season.
+          final seasonKey = '${showId}_$tmdbSeasonNumber';
+
+          // Fetch each TMDB season only once.
           if (!episodeCache.containsKey(seasonKey)) {
-            // DEBUG: Log the show and season being requested.
+            importStatus.value = 'Fetching episodes for $title...';
+
             debugPrint('===== TMDB SEASON REQUEST =====');
             debugPrint('Show title: $title');
             debugPrint('TMDB show ID: $showId');
-            debugPrint('Season number: $seasonNumber');
+            debugPrint('TMDB season number: $tmdbSeasonNumber');
 
-            final details = await _tmdbRepository.getSeasonDetails(
+            final details =
+            await _tmdbRepository.getSeasonDetails(
               showId,
-              seasonNumber,
+              tmdbSeasonNumber,
             );
 
             final seasonEpisodes =
@@ -193,11 +264,18 @@ class ProfileController extends GetxController {
             final episodeTitles = <int, String>{};
 
             for (final item in seasonEpisodes) {
-              final episode = Map<String, dynamic>.from(item as Map);
-              final number = episode['episode_number'] as int?;
+              final episode =
+              Map<String, dynamic>.from(item as Map);
+
+              final number = int.tryParse(
+                episode['episode_number'].toString(),
+              );
+
               final name = episode['name']?.toString();
 
-              if (number != null && name != null) {
+              if (number != null &&
+                  name != null &&
+                  name.isNotEmpty) {
                 episodeTitles[number] = name;
               }
             }
@@ -205,8 +283,9 @@ class ProfileController extends GetxController {
             episodeCache[seasonKey] = episodeTitles;
           }
 
+          // Use the converted TMDB episode number.
           final episodeTitle =
-          episodeCache[seasonKey]?[episodeNumber];
+          episodeCache[seasonKey]?[tmdbEpisodeNumber];
 
           if (episodeTitle == null) {
             _recordSkipped('Season or episode not found');
@@ -214,41 +293,43 @@ class ProfileController extends GetxController {
             continue;
           }
 
-          final watchedAt = watchedAtIndex == -1
-              ? DateTime.now()
-              : DateTime.tryParse(
-            _cell(row, watchedAtIndex),
-          ) ??
-              DateTime.now();
+          final watchedAtText = watchedAtColumn == -1
+              ? ''
+              : _cell(row, watchedAtColumn);
 
+          final watchedAt = DateTime.tryParse(watchedAtText);
+
+          // Save the converted TMDB numbering.
           episodesToImport.add({
             'showId': showId,
             'showTitle': title,
-            'seasonNumber': seasonNumber,
-            'episodeNumber': episodeNumber,
+            'seasonNumber': tmdbSeasonNumber,
+            'episodeNumber': tmdbEpisodeNumber,
             'episodeTitle': episodeTitle,
-            'watchedAt': watchedAt,
+            'watchedAt': watchedAt ?? DateTime.now(),
           });
-        } catch (e) {
-          debugPrint('===== IMPORT ERROR =====');
-          debugPrint('CSV row: ${i + 2}');
-
-          if (e is DioException) {
-            debugPrint('Request URL: ${e.requestOptions.uri}');
-            debugPrint('Status code: ${e.response?.statusCode}');
-            debugPrint('TMDB response: ${e.response?.data}');
-          } else {
-            debugPrint('Error details: $e');
-          }
-
+        } on DioException catch (e) {
           _recordSkipped('TMDB/API or processing error');
+
+          debugPrint('===== TMDB API ERROR =====');
+          debugPrint('CSV row: ${i + 2}');
+          debugPrint('Error: ${e.message}');
+          debugPrint('Request URL: ${e.requestOptions.uri}');
+          debugPrint('Status code: ${e.response?.statusCode}');
+          debugPrint('TMDB response: ${e.response?.data}');
+        } catch (e) {
+          _recordSkipped('TMDB/API or processing error');
+
+          debugPrint('===== IMPORT ROW ERROR =====');
+          debugPrint('CSV row: ${i + 2}');
+          debugPrint('Error: $e');
         }
 
         importProgress.value = (i + 1) / dataRows.length;
       }
 
-      // Save matched episodes to Firestore.
-      importStatus.value = 'Saving watched episodes...';
+      // Save successfully matched episodes.
+      importStatus.value = 'Saving episodes...';
 
       if (episodesToImport.isNotEmpty) {
         await _watchHistoryRepository.importWatchedEpisodes(
@@ -257,26 +338,27 @@ class ProfileController extends GetxController {
       }
 
       importedCount.value = episodesToImport.length;
-      importProgress.value = 1;
       importStatus.value = 'Import completed!';
 
       Get.snackbar(
         'Import completed',
-        '${importedCount.value} episodes imported. '
+        '${importedCount.value} episodes imported, '
             '${skippedCount.value} skipped.',
         snackPosition: SnackPosition.BOTTOM,
       );
 
-      // Print a breakdown of skipped episodes.
-      debugPrint('===== IMPORT SKIP REPORT =====');
+      debugPrint('===== TV TIME IMPORT SUMMARY =====');
+      debugPrint('Imported: ${importedCount.value}');
+      debugPrint('Skipped: ${skippedCount.value}');
 
       for (final entry in skipReasons.entries) {
         debugPrint('${entry.key}: ${entry.value}');
       }
-
-      debugPrint('==============================');
     } catch (e) {
       importStatus.value = 'Import failed';
+
+      debugPrint('===== TV TIME IMPORT FAILED =====');
+      debugPrint('$e');
 
       Get.snackbar(
         'Import failed',
@@ -287,6 +369,8 @@ class ProfileController extends GetxController {
       isImporting.value = false;
     }
   }
+
+
 
 
 
