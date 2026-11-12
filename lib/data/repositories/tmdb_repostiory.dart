@@ -52,4 +52,9 @@ class TmdbRepository {
     return response.data as Map<String, dynamic>;
   }
 
+  Future<Popular> searchTvShows(String query) async {
+    final response = await tmdbService.searchTvShows(query);
+    return Popular.fromJson(response.data);
+  }
+
 }

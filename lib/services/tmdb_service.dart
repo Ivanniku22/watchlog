@@ -61,4 +61,14 @@ class TmdbService {
     return _dio.get('/tv/$seriesId/season/$seasonNumber');
   }
 
+  Future<Response> searchTvShows(String query) {
+    return _dio.get(
+      '/search/tv',
+      queryParameters: {
+        'query': query,
+        'include_adult': false,
+      },
+    );
+  }
+
 }
