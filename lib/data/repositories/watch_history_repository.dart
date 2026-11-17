@@ -1,6 +1,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class WatchHistoryRepository {
   WatchHistoryRepository({
@@ -69,36 +70,115 @@ class WatchHistoryRepository {
     await _watchedEpisodes.doc(documentId).delete();
   }
 
-  Future<void> importWatchedEpisodes(
+
+
+  Future<Map<String, dynamic>> compareWatchedEpisodes(
       List<Map<String, dynamic>> episodes,
       ) async {
-    for (var i = 0; i < episodes.length; i += 500) {
-      final batch = _firestore.batch();
-      final chunk = episodes.skip(i).take(500);
+    // Read the existing watch history. This method does not modify Firestore.
+    final existingSnapshot = await _watchedEpisodes.get();
 
-      for (final episode in chunk) {
+    final existingIds = existingSnapshot.docs
+        .map((doc) => doc.id)
+        .toSet();
+
+    final seenCsvIds = <String>{};
+    final missingEpisodes = <Map<String, dynamic>>[];
+
+    var alreadyExistsCount = 0;
+    var duplicateCsvCount = 0;
+
+    for (final episode in episodes) {
+      final documentId =
+          '${episode['showId']}_S${episode['seasonNumber']}_E${episode['episodeNumber']}';
+
+      // Ignore duplicate episode entries in the CSV.
+      if (!seenCsvIds.add(documentId)) {
+        duplicateCsvCount++;
+        continue;
+      }
+
+      if (existingIds.contains(documentId)) {
+        alreadyExistsCount++;
+      } else {
+        missingEpisodes.add(episode);
+      }
+    }
+
+    return {
+      'alreadyExistsCount': alreadyExistsCount,
+      'missingEpisodes': missingEpisodes,
+      'missingCount': missingEpisodes.length,
+      'duplicateCsvCount': duplicateCsvCount,
+      'uniqueCsvCount': seenCsvIds.length,
+      'firestoreDocumentCount': existingSnapshot.docs.length,
+    };
+  }
+
+
+
+  Future<int> importWatchedEpisodes(
+      List<Map<String, dynamic>> episodes,
+      ) async {
+    const batchLimit = 500;
+    var writtenCount = 0;
+
+    for (var i = 0; i < episodes.length; i += batchLimit) {
+      final chunk = episodes.skip(i).take(batchLimit).toList();
+
+      final documentRefs = chunk.map((episode) {
         final documentId =
             '${episode['showId']}_S${episode['seasonNumber']}_E${episode['episodeNumber']}';
 
-        final documentRef = _watchedEpisodes.doc(documentId);
+        return _watchedEpisodes.doc(documentId);
+      }).toList();
 
-        batch.set(
-          documentRef,
-          {
-            'showId': episode['showId'],
-            'showTitle': episode['showTitle'],
-            'seasonNumber': episode['seasonNumber'],
-            'episodeNumber': episode['episodeNumber'],
-            'episodeTitle': episode['episodeTitle'],
-            'watchedAt': Timestamp.fromDate(
-              episode['watchedAt'] as DateTime,
-            ),
-          },
-          SetOptions(merge: true),
+      // Read existing documents before writing.
+      final snapshots = await Future.wait(
+        documentRefs.map((ref) => ref.get()),
+      );
+
+      final batch = _firestore.batch();
+      var batchWriteCount = 0;
+
+      for (var j = 0; j < chunk.length; j++) {
+        final episode = chunk[j];
+        final snapshot = snapshots[j];
+
+        final watchedAt = Timestamp.fromDate(
+          episode['watchedAt'] as DateTime,
         );
+
+        final newData = {
+          'showId': episode['showId'],
+          'showTitle': episode['showTitle'],
+          'seasonNumber': episode['seasonNumber'],
+          'episodeNumber': episode['episodeNumber'],
+          'episodeTitle': episode['episodeTitle'],
+          'watchedAt': watchedAt,
+        };
+
+        // Skip existing documents.
+        if (snapshot.exists) {
+          continue;
+        }
+
+        batch.set(documentRefs[j], newData);
+        batchWriteCount++;
       }
 
-      await batch.commit();
+      if (batchWriteCount > 0) {
+        await batch.commit();
+        writtenCount += batchWriteCount;
+      }
+
+      debugPrint(
+        'Import progress: ${i + chunk.length}/${episodes.length} '
+            '| Newly saved: $writtenCount',
+      );
     }
+
+    return writtenCount;
   }
+
 }

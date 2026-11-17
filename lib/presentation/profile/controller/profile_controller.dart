@@ -10,6 +10,8 @@ import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/tmdb_repostiory.dart';
 import '../../../data/repositories/watch_history_repository.dart';
 import 'package:dio/dio.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 
 class ProfileController extends GetxController {
@@ -31,11 +33,20 @@ class ProfileController extends GetxController {
   final skippedCount = 0.obs;
   final importStatus = ''.obs;
 
+  final existingEpisodeCount = 0.obs;
+  final missingEpisodeCount = 0.obs;
+  final duplicateCsvCount = 0.obs;
+
+  final missingEpisodesForImport =
+      <Map<String, dynamic>>[].obs;
+
   @override
   void onInit() {
     super.onInit();
     user.value = _authRepository.currentUser;
+    // checkWatchedEpisodeCount();
   }
+
 
 
 
@@ -50,10 +61,11 @@ class ProfileController extends GetxController {
 
       final confirmed = await Get.dialog<bool>(
         AlertDialog(
-          title: const Text('Import TV Time History'),
+          title: const Text('Compare TV Time History'),
           content: const Text(
-            'This will import your watched episodes into your '
-                'WatchLog account. Continue?',
+            'This will compare your TV Time history with '
+                'your existing WatchLog history. No data will '
+                'be added or deleted. Continue?',
           ),
           actions: [
             TextButton(
@@ -62,7 +74,7 @@ class ProfileController extends GetxController {
             ),
             ElevatedButton(
               onPressed: () => Get.back(result: true),
-              child: const Text('Import'),
+              child: const Text('Compare'),
             ),
           ],
         ),
@@ -75,6 +87,12 @@ class ProfileController extends GetxController {
       importedCount.value = 0;
       skippedCount.value = 0;
       skipReasons.clear();
+
+      existingEpisodeCount.value = 0;
+      missingEpisodeCount.value = 0;
+      duplicateCsvCount.value = 0;
+      missingEpisodesForImport.clear();
+
       importStatus.value = 'Reading CSV file...';
 
       final bytes = await pickedFile.readAsBytes();
@@ -117,7 +135,8 @@ class ProfileController extends GetxController {
           seasonColumn == -1 ||
           episodeColumn == -1) {
         throw Exception(
-          'Could not find the required title, season, or episode columns.',
+          'Could not find the required title, season, '
+              'or episode columns.',
         );
       }
 
@@ -146,6 +165,24 @@ class ProfileController extends GetxController {
         3: 19,
         4: 30,
         5: 55,
+      };
+
+      const dragonBallSeasonOffsets = {
+        1: 0,
+        2: 13,
+        3: 28,
+        4: 68,
+        5: 101,
+        6: 132,
+      };
+
+      const dragonBallSeasonCounts = {
+        1: 13,
+        2: 15,
+        3: 40,
+        4: 33,
+        5: 31,
+        6: 21,
       };
 
       for (var i = 0; i < dataRows.length; i++) {
@@ -209,13 +246,10 @@ class ProfileController extends GetxController {
           var tmdbSeasonNumber = seasonNumber;
           var tmdbEpisodeNumber = episodeNumber;
 
-          // Convert Dragon Ball Super numbering BEFORE
-          // creating the season key or making the API request.
+          // Convert Dragon Ball Super numbering.
           if (normalizedTitle ==
               _normalizeTitle('Dragon Ball Super')) {
-            final offset =
-            dragonBallEpisodeOffsets[seasonNumber];
-
+            final offset = dragonBallEpisodeOffsets[seasonNumber];
             final episodeCount =
             dragonBallSeasonEpisodeCounts[seasonNumber];
 
@@ -233,6 +267,33 @@ class ProfileController extends GetxController {
             tmdbEpisodeNumber = offset + episodeNumber;
           }
 
+          // Convert Dragon Ball numbering
+
+          if (normalizedTitle == _normalizeTitle('Dragon Ball')) {
+            final offset = dragonBallSeasonOffsets[seasonNumber];
+            final episodeCount = dragonBallSeasonCounts[seasonNumber];
+
+            if (offset == null ||
+                episodeCount == null ||
+                episodeNumber > episodeCount) {
+              _recordSkipped('Invalid Dragon Ball episode number');
+              importProgress.value = (i + 1) / dataRows.length;
+              continue;
+            }
+
+            tmdbSeasonNumber = 1;
+            tmdbEpisodeNumber = offset + episodeNumber;
+          }
+
+          // Attack on Titan: map the two finale specials to TMDB Season 0.
+          if (normalizedTitle == _normalizeTitle('Attack on Titan') &&
+              seasonNumber == 4 &&
+              episodeNumber >= 29 &&
+              episodeNumber <= 30) {
+            tmdbSeasonNumber = 0;
+            tmdbEpisodeNumber = episodeNumber == 29 ? 36 : 37;
+          }
+
           debugPrint('===== EPISODE MAPPING =====');
           debugPrint('Show: $title');
           debugPrint('Original season: $seasonNumber');
@@ -240,17 +301,11 @@ class ProfileController extends GetxController {
           debugPrint('TMDB season: $tmdbSeasonNumber');
           debugPrint('TMDB episode: $tmdbEpisodeNumber');
 
-          // IMPORTANT: This key uses the converted TMDB season.
           final seasonKey = '${showId}_$tmdbSeasonNumber';
 
           // Fetch each TMDB season only once.
           if (!episodeCache.containsKey(seasonKey)) {
             importStatus.value = 'Fetching episodes for $title...';
-
-            debugPrint('===== TMDB SEASON REQUEST =====');
-            debugPrint('Show title: $title');
-            debugPrint('TMDB show ID: $showId');
-            debugPrint('TMDB season number: $tmdbSeasonNumber');
 
             final details =
             await _tmdbRepository.getSeasonDetails(
@@ -283,11 +338,61 @@ class ProfileController extends GetxController {
             episodeCache[seasonKey] = episodeTitles;
           }
 
-          // Use the converted TMDB episode number.
           final episodeTitle =
           episodeCache[seasonKey]?[tmdbEpisodeNumber];
 
           if (episodeTitle == null) {
+            debugPrint('===== EPISODE NOT FOUND =====');
+            debugPrint('Show: $title');
+            debugPrint('TMDB show ID: $showId');
+            debugPrint('Original season: $seasonNumber');
+            debugPrint('Original episode: $episodeNumber');
+            debugPrint('TMDB season: $tmdbSeasonNumber');
+            debugPrint('TMDB episode: $tmdbEpisodeNumber');
+            debugPrint('Available episode numbers: ${episodeCache[seasonKey]?.keys.toList()}');
+
+            if (normalizedTitle == _normalizeTitle('Attack on Titan') &&
+                seasonNumber == 4 &&
+                episodeNumber > 28) {
+              final specialsKey = '${showId}_0';
+
+              if (!episodeCache.containsKey(specialsKey)) {
+                final specialsDetails =
+                await _tmdbRepository.getSeasonDetails(showId, 0);
+
+                final specialsEpisodes =
+                    specialsDetails['episodes'] as List? ?? [];
+
+                final specialsTitles = <int, String>{};
+
+                for (final item in specialsEpisodes) {
+                  final episode =
+                  Map<String, dynamic>.from(item as Map);
+
+                  final number = int.tryParse(
+                    episode['episode_number'].toString(),
+                  );
+
+                  final name = episode['name']?.toString();
+
+                  if (number != null && name != null) {
+                    specialsTitles[number] = name;
+                  }
+                }
+
+                episodeCache[specialsKey] = specialsTitles;
+              }
+
+              debugPrint('===== ATTACK ON TITAN LATER SPECIALS =====');
+
+              final specials = episodeCache[specialsKey]!;
+
+              for (final entry in specials.entries) {
+                if (entry.key >= 25) {
+                  debugPrint('TMDB S0E${entry.key}: ${entry.value}');
+                }
+              }
+            }
             _recordSkipped('Season or episode not found');
             importProgress.value = (i + 1) / dataRows.length;
             continue;
@@ -299,7 +404,7 @@ class ProfileController extends GetxController {
 
           final watchedAt = DateTime.tryParse(watchedAtText);
 
-          // Save the converted TMDB numbering.
+          // Store the converted TMDB numbering.
           episodesToImport.add({
             'showId': showId,
             'showTitle': title,
@@ -309,6 +414,7 @@ class ProfileController extends GetxController {
             'watchedAt': watchedAt ?? DateTime.now(),
           });
         } on DioException catch (e) {
+
           _recordSkipped('TMDB/API or processing error');
 
           debugPrint('===== TMDB API ERROR =====');
@@ -328,40 +434,73 @@ class ProfileController extends GetxController {
         importProgress.value = (i + 1) / dataRows.length;
       }
 
-      // Save successfully matched episodes.
-      importStatus.value = 'Saving episodes...';
+      // ==========================================
+      // COMPARE WITH FIRESTORE - NO WRITES
+      // ==========================================
 
-      if (episodesToImport.isNotEmpty) {
-        await _watchHistoryRepository.importWatchedEpisodes(
-          episodesToImport,
+      importStatus.value = 'Comparing with existing history...';
+
+      if (episodesToImport.isEmpty) {
+        throw Exception(
+          'No valid episodes were matched with TMDB. '
+              'Nothing was compared.',
         );
       }
 
-      importedCount.value = episodesToImport.length;
-      importStatus.value = 'Import completed!';
-
-      Get.snackbar(
-        'Import completed',
-        '${importedCount.value} episodes imported, '
-            '${skippedCount.value} skipped.',
-        snackPosition: SnackPosition.BOTTOM,
+      final comparison =
+      await _watchHistoryRepository.compareWatchedEpisodes(
+        episodesToImport,
       );
 
-      debugPrint('===== TV TIME IMPORT SUMMARY =====');
-      debugPrint('Imported: ${importedCount.value}');
+      existingEpisodeCount.value =
+      comparison['alreadyExistsCount'] as int;
+
+      missingEpisodeCount.value =
+      comparison['missingCount'] as int;
+
+      duplicateCsvCount.value =
+      comparison['duplicateCsvCount'] as int;
+
+      missingEpisodesForImport.assignAll(
+        (comparison['missingEpisodes'] as List)
+            .cast<Map<String, dynamic>>(),
+      );
+
+      importStatus.value = 'Comparison completed!';
+
+      debugPrint('===== TV TIME COMPARISON SUMMARY =====');
+      debugPrint('CSV rows: ${dataRows.length}');
+      debugPrint('Successfully matched: ${episodesToImport.length}');
+      debugPrint('Already in Firestore: ${existingEpisodeCount.value}');
+      debugPrint('Missing from Firestore: ${missingEpisodeCount.value}');
+      debugPrint('Duplicate CSV entries: ${duplicateCsvCount.value}');
       debugPrint('Skipped: ${skippedCount.value}');
+      debugPrint(
+        'Firestore documents: '
+            '${comparison['firestoreDocumentCount']}',
+      );
 
       for (final entry in skipReasons.entries) {
         debugPrint('${entry.key}: ${entry.value}');
       }
-    } catch (e) {
-      importStatus.value = 'Import failed';
 
-      debugPrint('===== TV TIME IMPORT FAILED =====');
+      Get.snackbar(
+        'Comparison completed',
+        'Already saved: ${existingEpisodeCount.value}\n'
+            'Missing: ${missingEpisodeCount.value}\n'
+            'Duplicates: ${duplicateCsvCount.value}\n'
+            'Skipped: ${skippedCount.value}',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 8),
+      );
+    } catch (e) {
+      importStatus.value = 'Comparison failed';
+
+      debugPrint('===== TV TIME COMPARISON FAILED =====');
       debugPrint('$e');
 
       Get.snackbar(
-        'Import failed',
+        'Comparison failed',
         e.toString(),
         snackPosition: SnackPosition.BOTTOM,
       );
@@ -369,8 +508,6 @@ class ProfileController extends GetxController {
       isImporting.value = false;
     }
   }
-
-
 
 
 
@@ -413,4 +550,22 @@ class ProfileController extends GetxController {
 
     skipReasons[reason] = (skipReasons[reason] ?? 0) + 1;
   }
+
+  // Future<void> checkWatchedEpisodeCount() async {
+  //   final user = FirebaseAuth.instance.currentUser;
+  //
+  //   if (user == null) {
+  //     debugPrint('No signed-in user found.');
+  //     return;
+  //   }
+  //
+  //   final result = await FirebaseFirestore.instance
+  //       .collection('users')
+  //       .doc(user.uid)
+  //       .collection('watched_episodes')
+  //       .count()
+  //       .get();
+  //
+  //   debugPrint('TOTAL WATCHED EPISODES: ${result.count}');
+  // }
 }
