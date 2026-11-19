@@ -9,8 +9,6 @@ import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/tmdb_repostiory.dart';
 import '../../../data/repositories/watch_history_repository.dart';
 import 'package:dio/dio.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileController extends GetxController {
   ProfileController({AuthRepository? authRepository})
@@ -36,10 +34,14 @@ class ProfileController extends GetxController {
 
   final missingEpisodesForImport = <Map<String, dynamic>>[].obs;
 
+  final addedShows = <Map<String, dynamic>>[].obs;
+  final isLoadingShows = false.obs;
+
   @override
   void onInit() {
     super.onInit();
     user.value = _authRepository.currentUser;
+    loadAddedShows();
     // checkWatchedEpisodeCount();
   }
 
@@ -503,6 +505,19 @@ class ProfileController extends GetxController {
     }
   }
 
+  Future<void> loadAddedShows() async {
+    try {
+      isLoadingShows.value = true;
+
+      final shows = await _watchHistoryRepository.getAddedShows();
+
+      addedShows.assignAll(shows);
+    } catch (e) {
+      debugPrint('Error loading added shows: $e');
+    } finally {
+      isLoadingShows.value = false;
+    }
+  }
 
   int _findColumn(List<String> headers, List<String> names) {
     return headers.indexWhere((header) => names.contains(header));

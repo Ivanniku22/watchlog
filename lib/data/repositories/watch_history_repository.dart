@@ -26,6 +26,143 @@ class WatchHistoryRepository {
         .collection('watched_episodes');
   }
 
+  CollectionReference<Map<String, dynamic>> get _addedShows {
+    final user = _auth.currentUser;
+
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    return _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('added_shows');
+  }
+
+  Future<void> addShow({
+    required int showId,
+    required String showTitle,
+    required String posterPath,
+    String? backdropPath,
+  }) async {
+    await _addedShows.doc(showId.toString()).set({
+      'showId': showId,
+      'showTitle': showTitle,
+      'posterPath': posterPath,
+      'backdropPath': backdropPath,
+      'addedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getAddedShows() async {
+    final snapshot = await _addedShows
+        .orderBy('addedAt', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) => doc.data()).toList();
+  }
+
+  Future<int> importWatchedShowsToLibrary() async {
+    // Read existing watched episodes.
+    final episodesSnapshot = await _watchedEpisodes.get();
+
+    // Group episodes by show ID.
+    final Map<int, Map<String, dynamic>> uniqueShows = {};
+
+    for (final episode in episodesSnapshot.docs) {
+      final data = episode.data();
+      final rawShowId = data['showId'];
+
+      if (rawShowId is! num) continue;
+
+      final showId = rawShowId.toInt();
+      final watchedAt = data['watchedAt'];
+
+      if (!uniqueShows.containsKey(showId)) {
+        uniqueShows[showId] = {
+          'showId': showId,
+          'showTitle': data['showTitle'] ?? 'Unknown Show',
+          'lastWatchedAt': watchedAt,
+        };
+      } else {
+        final existingDate = uniqueShows[showId]!['lastWatchedAt'];
+
+        if (watchedAt is Timestamp &&
+            (existingDate is! Timestamp ||
+                watchedAt.compareTo(existingDate) > 0)) {
+          uniqueShows[showId]!['lastWatchedAt'] = watchedAt;
+        }
+      }
+    }
+
+    // Check which shows are already in the library.
+    final existingShowsSnapshot = await _addedShows.get();
+
+    final existingIds = existingShowsSnapshot.docs
+        .map((doc) => doc.id)
+        .toSet();
+
+    // Only add shows that aren't already in the library.
+    final showsToAdd = uniqueShows.entries
+        .where((entry) => !existingIds.contains(entry.key.toString()))
+        .toList();
+
+    const batchLimit = 400;
+    var importedCount = 0;
+
+    for (var i = 0; i < showsToAdd.length; i += batchLimit) {
+      final batch = _firestore.batch();
+
+      final chunk = showsToAdd.skip(i).take(batchLimit);
+
+      for (final entry in chunk) {
+        final show = entry.value;
+
+        batch.set(
+          _addedShows.doc(entry.key.toString()),
+          {
+            'showId': show['showId'],
+            'showTitle': show['showTitle'],
+            'addedAt': FieldValue.serverTimestamp(),
+            'lastWatchedAt': show['lastWatchedAt'],
+          },
+        );
+
+        importedCount++;
+      }
+
+      await batch.commit();
+    }
+
+    return importedCount;
+  }
+
+  Future<void> removeShow(int showId) async {
+    // Find all watched episodes belonging to this show.
+    final episodesSnapshot = await _watchedEpisodes
+        .where('showId', isEqualTo: showId)
+        .get();
+
+    // Remove the show from the library.
+    await _addedShows.doc(showId.toString()).delete();
+
+    // Delete episodes in batches of 400.
+    const batchLimit = 400;
+    final episodes = episodesSnapshot.docs;
+
+    for (var i = 0; i < episodes.length; i += batchLimit) {
+      final batch = _firestore.batch();
+
+      final chunk = episodes.skip(i).take(batchLimit);
+
+      for (final episode in chunk) {
+        batch.delete(episode.reference);
+      }
+
+      await batch.commit();
+    }
+  }
+
   Future<void> markEpisodeWatched({
     required int showId,
     required String showTitle,
