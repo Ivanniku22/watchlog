@@ -42,16 +42,26 @@ class WatchHistoryRepository {
   Future<void> addShow({
     required int showId,
     required String showTitle,
-    required String posterPath,
+    String? posterPath,
     String? backdropPath,
   }) async {
-    await _addedShows.doc(showId.toString()).set({
+    final data = <String, dynamic>{
       'showId': showId,
       'showTitle': showTitle,
-      'posterPath': posterPath,
-      'backdropPath': backdropPath,
       'addedAt': FieldValue.serverTimestamp(),
-    });
+    };
+
+    if (posterPath != null) {
+      data['posterPath'] = posterPath;
+    }
+
+    if (backdropPath != null) {
+      data['backdropPath'] = backdropPath;
+    }
+
+    await _addedShows
+        .doc(showId.toString())
+        .set(data, SetOptions(merge: true));
   }
 
   Future<List<Map<String, dynamic>>> getAddedShows() async {
@@ -135,6 +145,28 @@ class WatchHistoryRepository {
     }
 
     return importedCount;
+  }
+
+  Future<void> updateShowPosters({
+    required int showId,
+    String? posterPath,
+    String? backdropPath,
+  }) async {
+    final data = <String, dynamic>{};
+
+    if (posterPath != null) {
+      data['posterPath'] = posterPath;
+    }
+
+    if (backdropPath != null) {
+      data['backdropPath'] = backdropPath;
+    }
+
+    if (data.isEmpty) return;
+
+    await _addedShows
+        .doc(showId.toString())
+        .set(data, SetOptions(merge: true));
   }
 
   Future<void> removeShow(int showId) async {

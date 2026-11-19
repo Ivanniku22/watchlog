@@ -512,8 +512,61 @@ class ProfileController extends GetxController {
       final shows = await _watchHistoryRepository.getAddedShows();
 
       addedShows.assignAll(shows);
+
+      await loadShowPosters();
     } catch (e) {
       debugPrint('Error loading added shows: $e');
+    } finally {
+      isLoadingShows.value = false;
+    }
+  }
+
+  Future<void> loadShowPosters() async {
+    for (var i = 0; i < addedShows.length && i < 10; i++) {
+      final show = Map<String, dynamic>.from(addedShows[i]);
+
+      if (show['posterPath'] != null) continue;
+
+      try {
+        final showId = show['showId'] as int;
+
+        final details = await _tmdbRepository.getTvShowDetails(showId);
+
+        final posterPath = details['poster_path'];
+        final backdropPath = details['backdrop_path'];
+
+        if (posterPath != null || backdropPath != null) {
+          await _watchHistoryRepository.updateShowPosters(
+            showId: showId,
+            posterPath: posterPath,
+            backdropPath: backdropPath,
+          );
+
+          show['posterPath'] = posterPath;
+          show['backdropPath'] = backdropPath;
+
+          addedShows[i] = show;
+        }
+      } catch (e) {
+        debugPrint('Could not load poster for ${show['showTitle']}: $e');
+      }
+    }
+  }
+
+  Future<void> migrateWatchedShows() async {
+    try {
+      isLoadingShows.value = true;
+
+      final count =
+      await _watchHistoryRepository.importWatchedShowsToLibrary();
+
+      debugPrint('===== SHOW LIBRARY MIGRATION =====');
+      debugPrint('New shows added: $count');
+      debugPrint('==================================');
+
+      await loadAddedShows();
+    } catch (e) {
+      debugPrint('Show library migration failed: $e');
     } finally {
       isLoadingShows.value = false;
     }

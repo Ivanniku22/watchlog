@@ -5,8 +5,6 @@ import 'package:get/get.dart';
 import 'package:watchlog/data/upcoming_movie_data.dart';
 import 'package:watchlog/presentation/profile/controller/profile_controller.dart';
 
-import '../../../data/show_data.dart';
-
 class Profile extends GetView<ProfileController>{
 
   const Profile ({super.key});
@@ -289,24 +287,57 @@ class Profile extends GetView<ProfileController>{
                   const SizedBox(height: 10),
 
                   // Shows List little scroll view
-                  SizedBox(
-                    height: 200,
-                    child: ListView.builder(
+                  // Shows List
+                  Obx(() {
+                    final shows = controller.addedShows;
+
+                    if (controller.isLoadingShows.value) {
+                      return const SizedBox(
+                        height: 200,
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    }
+
+                    if (shows.isEmpty) {
+                      return const SizedBox(
+                        height: 100,
+                        child: Center(
+                          child: Text('No shows added yet'),
+                        ),
+                      );
+                    }
+
+                    return SizedBox(
+                      height: 200,
+                      child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: min(shows.length, 6),
-                        itemBuilder: (context, index){
+                        itemBuilder: (context, index) {
+                          final show = shows[index];
+                          final posterPath = show['posterPath'];
+
                           return Padding(
                             padding: const EdgeInsets.only(right: 12),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                shows[index].poster,
+                              child: posterPath != null
+                                  ? Image.network(
+                                'https://image.tmdb.org/t/p/w342$posterPath',
                                 fit: BoxFit.cover,
-                              ),
+                                width: 130,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return _showPosterFallback();
+                                },
+                              )
+                                  : _showPosterFallback(),
                             ),
                           );
-                        }),
-                  ),
+                        },
+                      ),
+                    );
+                  }),
 
 
                   const SizedBox(height: 20),
@@ -639,4 +670,17 @@ class _ProfileAvatarFallback extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _showPosterFallback() {
+  return Container(
+    width: 130,
+    height: 200,
+    color: Colors.grey.shade800,
+    child: const Icon(
+      Icons.tv,
+      color: Colors.white54,
+      size: 35,
+    ),
+  );
 }
