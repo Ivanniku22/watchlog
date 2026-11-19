@@ -9,6 +9,10 @@ import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/tmdb_repostiory.dart';
 import '../../../data/repositories/watch_history_repository.dart';
 import 'package:dio/dio.dart';
+import '../../../data/models/tmdb_models/popular.dart';
+
+
+
 
 class ProfileController extends GetxController {
   ProfileController({AuthRepository? authRepository})
@@ -569,6 +573,32 @@ class ProfileController extends GetxController {
       debugPrint('Show library migration failed: $e');
     } finally {
       isLoadingShows.value = false;
+    }
+  }
+
+  Future<void> openShowDetails(Map<String, dynamic> showData) async {
+    try {
+      final showId = showData['showId'] as int;
+
+      // Fetch complete show information from TMDB.
+      final details = await _tmdbRepository.getTvShowDetails(showId);
+
+      // Convert TMDB response into the TvShow model.
+      final show = TvShow.fromJson(details);
+
+      // Navigate to the existing Show Details page.
+      Get.toNamed(
+        AppRoutes.showDetails,
+        arguments: show,
+      );
+    } catch (e) {
+      debugPrint('Failed to open show details: $e');
+
+      Get.snackbar(
+        'Error',
+        'Unable to load show details.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 

@@ -286,7 +286,7 @@ class Profile extends GetView<ProfileController>{
 
                   const SizedBox(height: 10),
 
-                  // Shows List little scroll view
+
                   // Shows List
                   Obx(() {
                     final shows = controller.addedShows;
@@ -320,18 +320,21 @@ class Profile extends GetView<ProfileController>{
 
                           return Padding(
                             padding: const EdgeInsets.only(right: 12),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: posterPath != null
-                                  ? Image.network(
-                                'https://image.tmdb.org/t/p/w342$posterPath',
-                                fit: BoxFit.cover,
-                                width: 130,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return _showPosterFallback();
-                                },
-                              )
-                                  : _showPosterFallback(),
+                            child: GestureDetector(
+                              onTap: () => controller.openShowDetails(show),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: posterPath != null
+                                    ? Image.network(
+                                  'https://image.tmdb.org/t/p/w342$posterPath',
+                                  fit: BoxFit.cover,
+                                  width: 130,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return _showPosterFallback();
+                                  },
+                                )
+                                    : _showPosterFallback(),
+                              ),
                             ),
                           );
                         },
