@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -13,16 +12,14 @@ import 'package:dio/dio.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 class ProfileController extends GetxController {
   ProfileController({AuthRepository? authRepository})
-      : _authRepository =
-      authRepository ?? Get.find<AuthRepository>();
+    : _authRepository = authRepository ?? Get.find<AuthRepository>();
 
   final AuthRepository _authRepository;
   final TmdbRepository _tmdbRepository = Get.find<TmdbRepository>();
   final WatchHistoryRepository _watchHistoryRepository =
-  Get.find<WatchHistoryRepository>();
+      Get.find<WatchHistoryRepository>();
 
   final user = Rxn<AppUser>();
   final isSigningOut = false.obs;
@@ -37,8 +34,7 @@ class ProfileController extends GetxController {
   final missingEpisodeCount = 0.obs;
   final duplicateCsvCount = 0.obs;
 
-  final missingEpisodesForImport =
-      <Map<String, dynamic>>[].obs;
+  final missingEpisodesForImport = <Map<String, dynamic>>[].obs;
 
   @override
   void onInit() {
@@ -46,9 +42,6 @@ class ProfileController extends GetxController {
     user.value = _authRepository.currentUser;
     // checkWatchedEpisodeCount();
   }
-
-
-
 
   Future<void> importTvTimeData() async {
     try {
@@ -61,11 +54,11 @@ class ProfileController extends GetxController {
 
       final confirmed = await Get.dialog<bool>(
         AlertDialog(
-          title: const Text('Compare TV Time History'),
+          title: const Text('Import TV Time History'),
           content: const Text(
-            'This will compare your TV Time history with '
-                'your existing WatchLog history. No data will '
-                'be added or deleted. Continue?',
+            'This will import your TV Time watch history into '
+                'your existing WatchLog history. Episodes already '
+                'saved will be skipped. Continue?',
           ),
           actions: [
             TextButton(
@@ -74,7 +67,7 @@ class ProfileController extends GetxController {
             ),
             ElevatedButton(
               onPressed: () => Get.back(result: true),
-              child: const Text('Compare'),
+              child: const Text('Import'),
             ),
           ],
         ),
@@ -267,8 +260,7 @@ class ProfileController extends GetxController {
             tmdbEpisodeNumber = offset + episodeNumber;
           }
 
-          // Convert Dragon Ball numbering
-
+          // Convert Dragon Ball numbering.
           if (normalizedTitle == _normalizeTitle('Dragon Ball')) {
             final offset = dragonBallSeasonOffsets[seasonNumber];
             final episodeCount = dragonBallSeasonCounts[seasonNumber];
@@ -307,8 +299,7 @@ class ProfileController extends GetxController {
           if (!episodeCache.containsKey(seasonKey)) {
             importStatus.value = 'Fetching episodes for $title...';
 
-            final details =
-            await _tmdbRepository.getSeasonDetails(
+            final details = await _tmdbRepository.getSeasonDetails(
               showId,
               tmdbSeasonNumber,
             );
@@ -349,16 +340,23 @@ class ProfileController extends GetxController {
             debugPrint('Original episode: $episodeNumber');
             debugPrint('TMDB season: $tmdbSeasonNumber');
             debugPrint('TMDB episode: $tmdbEpisodeNumber');
-            debugPrint('Available episode numbers: ${episodeCache[seasonKey]?.keys.toList()}');
+            debugPrint(
+              'Available episode numbers: '
+                  '${episodeCache[seasonKey]?.keys.toList()}',
+            );
 
-            if (normalizedTitle == _normalizeTitle('Attack on Titan') &&
+            if (normalizedTitle ==
+                _normalizeTitle('Attack on Titan') &&
                 seasonNumber == 4 &&
                 episodeNumber > 28) {
               final specialsKey = '${showId}_0';
 
               if (!episodeCache.containsKey(specialsKey)) {
                 final specialsDetails =
-                await _tmdbRepository.getSeasonDetails(showId, 0);
+                await _tmdbRepository.getSeasonDetails(
+                  showId,
+                  0,
+                );
 
                 final specialsEpisodes =
                     specialsDetails['episodes'] as List? ?? [];
@@ -393,6 +391,7 @@ class ProfileController extends GetxController {
                 }
               }
             }
+
             _recordSkipped('Season or episode not found');
             importProgress.value = (i + 1) / dataRows.length;
             continue;
@@ -414,7 +413,6 @@ class ProfileController extends GetxController {
             'watchedAt': watchedAt ?? DateTime.now(),
           });
         } on DioException catch (e) {
-
           _recordSkipped('TMDB/API or processing error');
 
           debugPrint('===== TMDB API ERROR =====');
@@ -435,72 +433,68 @@ class ProfileController extends GetxController {
       }
 
       // ==========================================
-      // COMPARE WITH FIRESTORE - NO WRITES
+      // IMPORT INTO FIRESTORE
       // ==========================================
 
-      importStatus.value = 'Comparing with existing history...';
+      importStatus.value = 'Preparing Firestore import...';
 
       if (episodesToImport.isEmpty) {
         throw Exception(
           'No valid episodes were matched with TMDB. '
-              'Nothing was compared.',
+              'Nothing was imported.',
         );
       }
 
-      final comparison =
-      await _watchHistoryRepository.compareWatchedEpisodes(
+      importStatus.value = 'Importing episodes into Firestore...';
+
+      final result =
+      await _watchHistoryRepository.importWatchedEpisodes(
         episodesToImport,
       );
 
-      existingEpisodeCount.value =
-      comparison['alreadyExistsCount'] as int;
+      final written = result['writtenCount'] ?? 0;
+      final alreadyExists = result['alreadyExistsCount'] ?? 0;
+      final duplicates = result['duplicateCount'] ?? 0;
 
-      missingEpisodeCount.value =
-      comparison['missingCount'] as int;
+      importedCount.value = written;
+      existingEpisodeCount.value = alreadyExists;
+      duplicateCsvCount.value = duplicates;
 
-      duplicateCsvCount.value =
-      comparison['duplicateCsvCount'] as int;
+      missingEpisodeCount.value = 0;
+      missingEpisodesForImport.clear();
 
-      missingEpisodesForImport.assignAll(
-        (comparison['missingEpisodes'] as List)
-            .cast<Map<String, dynamic>>(),
-      );
+      importProgress.value = 1.0;
+      importStatus.value = 'Import completed!';
 
-      importStatus.value = 'Comparison completed!';
-
-      debugPrint('===== TV TIME COMPARISON SUMMARY =====');
+      debugPrint('===== TV TIME IMPORT SUMMARY =====');
       debugPrint('CSV rows: ${dataRows.length}');
       debugPrint('Successfully matched: ${episodesToImport.length}');
-      debugPrint('Already in Firestore: ${existingEpisodeCount.value}');
-      debugPrint('Missing from Firestore: ${missingEpisodeCount.value}');
-      debugPrint('Duplicate CSV entries: ${duplicateCsvCount.value}');
+      debugPrint('Newly imported: $written');
+      debugPrint('Already in Firestore: $alreadyExists');
+      debugPrint('Duplicate CSV entries: $duplicates');
       debugPrint('Skipped: ${skippedCount.value}');
-      debugPrint(
-        'Firestore documents: '
-            '${comparison['firestoreDocumentCount']}',
-      );
 
       for (final entry in skipReasons.entries) {
         debugPrint('${entry.key}: ${entry.value}');
       }
 
       Get.snackbar(
-        'Comparison completed',
-        'Already saved: ${existingEpisodeCount.value}\n'
-            'Missing: ${missingEpisodeCount.value}\n'
-            'Duplicates: ${duplicateCsvCount.value}\n'
+        'Import completed',
+        'Newly imported: $written\n'
+            'Already saved: $alreadyExists\n'
+            'Duplicates: $duplicates\n'
             'Skipped: ${skippedCount.value}',
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 8),
       );
     } catch (e) {
-      importStatus.value = 'Comparison failed';
+      importStatus.value = 'Import failed';
 
-      debugPrint('===== TV TIME COMPARISON FAILED =====');
+      debugPrint('===== TV TIME IMPORT FAILED =====');
       debugPrint('$e');
 
       Get.snackbar(
-        'Comparison failed',
+        'Import failed',
         e.toString(),
         snackPosition: SnackPosition.BOTTOM,
       );
@@ -508,7 +502,6 @@ class ProfileController extends GetxController {
       isImporting.value = false;
     }
   }
-
 
 
   int _findColumn(List<String> headers, List<String> names) {
@@ -521,9 +514,7 @@ class ProfileController extends GetxController {
   }
 
   String _normalizeTitle(String title) {
-    return title
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]'), '');
+    return title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
   }
 
   Future<void> signOut() async {

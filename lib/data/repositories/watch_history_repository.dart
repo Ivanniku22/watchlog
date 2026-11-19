@@ -117,21 +117,33 @@ class WatchHistoryRepository {
 
 
 
-  Future<int> importWatchedEpisodes(
+
+  Future<Map<String, int>> importWatchedEpisodes(
       List<Map<String, dynamic>> episodes,
       ) async {
-    const batchLimit = 500;
+    const batchLimit = 400;
+
+    // Deduplicate episodes using their Firestore document IDs.
+    final uniqueEpisodes = <String, Map<String, dynamic>>{};
+
+    for (final episode in episodes) {
+      final documentId =
+          '${episode['showId']}_S${episode['seasonNumber']}_E${episode['episodeNumber']}';
+
+      uniqueEpisodes.putIfAbsent(documentId, () => episode);
+    }
+
+    final episodeList = uniqueEpisodes.entries.toList();
+
     var writtenCount = 0;
+    var alreadyExistsCount = 0;
 
-    for (var i = 0; i < episodes.length; i += batchLimit) {
-      final chunk = episodes.skip(i).take(batchLimit).toList();
+    for (var i = 0; i < episodeList.length; i += batchLimit) {
+      final chunk = episodeList.skip(i).take(batchLimit).toList();
 
-      final documentRefs = chunk.map((episode) {
-        final documentId =
-            '${episode['showId']}_S${episode['seasonNumber']}_E${episode['episodeNumber']}';
-
-        return _watchedEpisodes.doc(documentId);
-      }).toList();
+      final documentRefs = chunk
+          .map((entry) => _watchedEpisodes.doc(entry.key))
+          .toList();
 
       // Read existing documents before writing.
       final snapshots = await Future.wait(
@@ -142,28 +154,30 @@ class WatchHistoryRepository {
       var batchWriteCount = 0;
 
       for (var j = 0; j < chunk.length; j++) {
-        final episode = chunk[j];
-        final snapshot = snapshots[j];
+        if (snapshots[j].exists) {
+          alreadyExistsCount++;
+          continue;
+        }
 
-        final watchedAt = Timestamp.fromDate(
-          episode['watchedAt'] as DateTime,
-        );
+        final episode = chunk[j].value;
+        final watchedAt = episode['watchedAt'];
 
-        final newData = {
+        if (watchedAt is! DateTime) {
+          throw Exception(
+            'Invalid watchedAt value for episode ${chunk[j].key}',
+          );
+        }
+
+
+        batch.set(documentRefs[j], {
           'showId': episode['showId'],
           'showTitle': episode['showTitle'],
           'seasonNumber': episode['seasonNumber'],
           'episodeNumber': episode['episodeNumber'],
           'episodeTitle': episode['episodeTitle'],
-          'watchedAt': watchedAt,
-        };
+          'watchedAt': Timestamp.fromDate(watchedAt),
+        });
 
-        // Skip existing documents.
-        if (snapshot.exists) {
-          continue;
-        }
-
-        batch.set(documentRefs[j], newData);
         batchWriteCount++;
       }
 
@@ -173,12 +187,18 @@ class WatchHistoryRepository {
       }
 
       debugPrint(
-        'Import progress: ${i + chunk.length}/${episodes.length} '
-            '| Newly saved: $writtenCount',
+        'Import progress: ${i + chunk.length}/${episodeList.length} '
+            '| Newly saved: $writtenCount '
+            '| Already present: $alreadyExistsCount',
       );
     }
 
-    return writtenCount;
+    return {
+      'writtenCount': writtenCount,
+      'alreadyExistsCount': alreadyExistsCount,
+      'duplicateCount': episodes.length - uniqueEpisodes.length,
+    };
   }
+
 
 }
