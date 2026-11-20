@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:csv/csv.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../data/models/app_user.dart';
+import '../../../data/models/tmdb_models/search_result.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/tmdb_repostiory.dart';
 import '../../../data/repositories/watch_history_repository.dart';
@@ -41,11 +42,17 @@ class ProfileController extends GetxController {
   final addedShows = <Map<String, dynamic>>[].obs;
   final isLoadingShows = false.obs;
 
+
+  final addedMovies = <Map<String, dynamic>>[].obs;
+  final isLoadingMovies = false.obs;
+
+
   @override
   void onInit() {
     super.onInit();
     user.value = _authRepository.currentUser;
     loadAddedShows();
+    loadAddedMovies();
     // checkWatchedEpisodeCount();
   }
 
@@ -525,6 +532,57 @@ class ProfileController extends GetxController {
     }
   }
 
+  Future<void> loadAddedMovies() async {
+    try {
+      isLoadingMovies.value = true;
+
+      final movies = await _watchHistoryRepository.getAddedMovies();
+
+      addedMovies.assignAll(movies);
+
+      await loadMoviePosters();
+    } catch (e) {
+      debugPrint('Error loading added movies: $e');
+    } finally {
+      isLoadingMovies.value = false;
+    }
+  }
+
+  Future<void> loadMoviePosters() async {
+    for (var i = 0; i < addedMovies.length && i < 10; i++) {
+      final movie = Map<String, dynamic>.from(addedMovies[i]);
+
+      if (movie['posterPath'] != null) continue;
+
+      try {
+        final movieId = movie['movieId'] as int;
+
+        final details =
+        await _tmdbRepository.getMovieDetails(movieId);
+
+        final posterPath = details['poster_path'];
+        final backdropPath = details['backdrop_path'];
+
+        if (posterPath != null || backdropPath != null) {
+          await _watchHistoryRepository.updateMoviePosters(
+            movieId: movieId,
+            posterPath: posterPath,
+            backdropPath: backdropPath,
+          );
+
+          movie['posterPath'] = posterPath;
+          movie['backdropPath'] = backdropPath;
+
+          addedMovies[i] = movie;
+        }
+      } catch (e) {
+        debugPrint(
+          'Could not load poster for ${movie['movieTitle']}: $e',
+        );
+      }
+    }
+  }
+
   Future<void> loadShowPosters() async {
     for (var i = 0; i < addedShows.length && i < 10; i++) {
       final show = Map<String, dynamic>.from(addedShows[i]);
@@ -597,6 +655,35 @@ class ProfileController extends GetxController {
       Get.snackbar(
         'Error',
         'Unable to load show details.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  Future<void> openMovieDetails(
+      Map<String, dynamic> movieData,
+      ) async {
+    try {
+      final movieId = movieData['movieId'] as int;
+
+      final details =
+      await _tmdbRepository.getMovieDetails(movieId);
+
+      final movie = SearchResult.fromJson({
+        ...details,
+        'media_type': 'movie',
+      });
+
+      Get.toNamed(
+        AppRoutes.movieDetails,
+        arguments: movie,
+      );
+    } catch (e) {
+      debugPrint('Failed to open movie details: $e');
+
+      Get.snackbar(
+        'Error',
+        'Unable to load movie details.',
         snackPosition: SnackPosition.BOTTOM,
       );
     }

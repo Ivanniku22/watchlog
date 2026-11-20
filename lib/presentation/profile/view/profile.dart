@@ -349,11 +349,12 @@ class Profile extends GetView<ProfileController>{
 
                   const SizedBox(height: 20),
 
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Favourites',
+                        'Movies',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       IconButton(
@@ -368,25 +369,71 @@ class Profile extends GetView<ProfileController>{
 
                   const SizedBox(height: 10),
 
-                  // Favourites List little scroll view
-                  SizedBox(
-                    height: 200,
-                    child: ListView.builder(
+                  Obx(() {
+                    if (controller.isLoadingMovies.value) {
+                      return const SizedBox(
+                        height: 200,
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    }
+
+                    final movies = controller.addedMovies;
+
+                    if (movies.isEmpty) {
+                      return const SizedBox(
+                        height: 100,
+                        child: Center(
+                          child: Text('No movies added yet.'),
+                        ),
+                      );
+                    }
+
+                    return SizedBox(
+                      height: 200,
+                      child: ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: min(upcomingMovies.length, 6),
-                        itemBuilder: (context, index){
+                        itemCount: min(movies.length, 6),
+                        itemBuilder: (context, index) {
+                          final movie = movies[index];
+                          final posterPath = movie['posterPath'];
+
                           return Padding(
                             padding: const EdgeInsets.only(right: 12),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                upcomingMovies[index].poster,
-                                fit: BoxFit.cover,
+                            child: GestureDetector(
+                              onTap: () => controller.openMovieDetails(movie),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: posterPath != null &&
+                                    posterPath.toString().isNotEmpty
+                                    ? Image.network(
+                                  'https://image.tmdb.org/t/p/w500$posterPath',
+                                  width: 130,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const SizedBox(
+                                      width: 130,
+                                      child: Center(
+                                        child: Icon(Icons.broken_image),
+                                      ),
+                                    );
+                                  },
+                                )
+                                    : const SizedBox(
+                                  width: 130,
+                                  child: Center(
+                                    child: Icon(Icons.movie),
+                                  ),
+                                ),
                               ),
                             ),
                           );
-                        }),
-                  ),
+                        },
+                      ),
+                    );
+                  }),
+
 
                   const SizedBox(height: 20),
 
