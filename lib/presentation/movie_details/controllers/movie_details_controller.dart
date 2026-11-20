@@ -59,6 +59,7 @@ class MovieDetailsController extends GetxController {
     }
   }
 
+
   Future<void> toggleWatchedStatus() async {
     if (!isMovieAdded.value) {
       Get.snackbar(
@@ -76,12 +77,14 @@ class MovieDetailsController extends GetxController {
       if (isMovieWatched.value) {
         await watchHistoryRepository.markMovieUnwatched(movie.id);
         isMovieWatched.value = false;
+        _showWatchStatusSnackbar('Marked as unwatched');
       } else {
         await watchHistoryRepository.markMovieWatched(
           movieId: movie.id,
           movieTitle: movie.title,
         );
         isMovieWatched.value = true;
+        _showWatchStatusSnackbar('Marked as watched');
       }
     } catch (e) {
       debugPrint('Failed to update movie watch status: $e');
@@ -94,4 +97,54 @@ class MovieDetailsController extends GetxController {
       isUpdatingWatchStatus.value = false;
     }
   }
+
+
+  void _showWatchStatusSnackbar(String message) {
+    Get.snackbar(
+      '',
+      '',
+      titleText: const SizedBox.shrink(),
+      messageText: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFD700),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.check,
+              color: Colors.black,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: const Color(0xFF252525),
+      borderRadius: 14,
+      margin: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 14,
+      ),
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 2),
+      animationDuration: const Duration(milliseconds: 300),
+      isDismissible: true,
+      forwardAnimationCurve: Curves.easeOutBack,
+    );
+  }
+
 }

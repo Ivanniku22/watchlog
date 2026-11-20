@@ -259,6 +259,7 @@ class ExploreController extends GetxController {
     }
   }
 
+
   Future<void> addSearchResult(SearchResult result) async {
     if (result.isMovie) {
       if (addedMovieIds.contains(result.id)) return;
@@ -272,11 +273,7 @@ class ExploreController extends GetxController {
         );
 
         addedMovieIds.add(result.id);
-
-        Get.snackbar(
-          'Added',
-          '${result.title} added to your movie library.',
-        );
+        _showAddedSnackbar(result.title, 'movie');
       } catch (e) {
         debugPrint('Error adding movie: $e');
         Get.snackbar('Error', 'Could not add ${result.title}.');
@@ -293,17 +290,80 @@ class ExploreController extends GetxController {
         );
 
         addedShowIds.add(result.id);
-
-        Get.snackbar(
-          'Added',
-          '${result.title} added to your library.',
-        );
+        _showAddedSnackbar(result.title, 'show');
       } catch (e) {
         debugPrint('Error adding show: $e');
         Get.snackbar('Error', 'Could not add ${result.title}.');
       }
     }
   }
+
+
+
+  void _showAddedSnackbar(String title, String type) {
+    Get.snackbar(
+      '',
+      '',
+      titleText: const SizedBox.shrink(),
+      messageText: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFD700),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.check,
+              color: Colors.black,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Added to your library',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: const Color(0xFF252525),
+      borderRadius: 14,
+      margin: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 14,
+      ),
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 2),
+      animationDuration: const Duration(milliseconds: 300),
+      isDismissible: true,
+      forwardAnimationCurve: Curves.easeOutBack,
+    );
+  }
+
 
   @override
   void onClose() {
