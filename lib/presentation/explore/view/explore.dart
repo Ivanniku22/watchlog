@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:watchlog/presentation/explore/controller/explore_controller.dart';
 import '../../../app/routes/app_routes.dart';
+import '../../../data/models/tmdb_models/popular.dart';
 
 class Explore extends GetView<ExploreController>{
 
@@ -107,21 +108,30 @@ class Explore extends GetView<ExploreController>{
                           arguments: show,
                         );
                       },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: posterPath != null && posterPath.isNotEmpty
-                            ? Image.network(
-                          'https://image.tmdb.org/t/p/w500$posterPath',
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Center(
-                              child: Icon(Icons.broken_image),
-                            );
-                          },
-                        )
-                            : const Center(
-                          child: Icon(Icons.movie),
-                        ),
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: SizedBox.expand(
+                              child: posterPath != null && posterPath.isNotEmpty
+                                  ? Image.network(
+                                'https://image.tmdb.org/t/p/w500$posterPath',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Center(
+                                    child: Icon(Icons.broken_image),
+                                  );
+                                },
+                              )
+                                  : const Center(
+                                child: Icon(Icons.movie),
+                              ),
+                            ),
+                          ),
+
+                          // Add button — visible only if the show isn't in the library.
+                          buildAddShowButton(show),
+                        ],
                       ),
                     );
                   },
@@ -185,7 +195,6 @@ class Explore extends GetView<ExploreController>{
                         itemBuilder: (context, index) {
                           final show = shows[index];
                           final posterPath = show.posterPath;
-
                           return GestureDetector(
                             onTap: () {
                               Get.toNamed(
@@ -207,31 +216,9 @@ class Explore extends GetView<ExploreController>{
                                     )
                                         : const Center(child: Icon(Icons.movie)),
                                   ),
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        // TODO: Add show
-                                      },
-                                      child: Container(
-                                        width: 28,
-                                        height: 28,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.25),
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: const Color(0xFFFFD700),
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.add,
-                                          color: Color(0xFFFFD700),
-                                          size: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+
+
+                                  buildAddShowButton(show),
                                 ],
                               ),
                             ),
@@ -321,7 +308,6 @@ class Explore extends GetView<ExploreController>{
                         itemBuilder: (context, index) {
                           final show = topRatedShows[index];
                           final posterPath = show.posterPath;
-
                           return GestureDetector(
                             onTap: () {
                               Get.toNamed(
@@ -348,31 +334,9 @@ class Explore extends GetView<ExploreController>{
                                       child: Icon(Icons.movie),
                                     ),
                                   ),
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        // TODO: Add show
-                                      },
-                                      child: Container(
-                                        width: 28,
-                                        height: 28,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.25),
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: const Color(0xFFFFD700),
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.add,
-                                          color: Color(0xFFFFD700),
-                                          size: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+
+
+                                  buildAddShowButton(show),
                                 ],
                               ),
                             ),
@@ -466,6 +430,7 @@ class Explore extends GetView<ExploreController>{
                           final show = anime[index];
                           final posterPath = show.posterPath;
 
+
                           return GestureDetector(
                             onTap: () {
                               Get.toNamed(
@@ -492,31 +457,9 @@ class Explore extends GetView<ExploreController>{
                                       child: Icon(Icons.movie),
                                     ),
                                   ),
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        // TODO: Add anime to watchlist.
-                                      },
-                                      child: Container(
-                                        width: 28,
-                                        height: 28,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.25),
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: const Color(0xFFFFD700),
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.add,
-                                          color: Color(0xFFFFD700),
-                                          size: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+
+
+                                  buildAddShowButton(show),
                                 ],
                               ),
                             ),
@@ -635,31 +578,9 @@ class Explore extends GetView<ExploreController>{
                                       child: Icon(Icons.movie),
                                     ),
                                   ),
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        // TODO: Add anime to watchlist.
-                                      },
-                                      child: Container(
-                                        width: 28,
-                                        height: 28,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.25),
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: const Color(0xFFFFD700),
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.add,
-                                          color: Color(0xFFFFD700),
-                                          size: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+
+
+                                  buildAddShowButton(show),
                                 ],
                               ),
                             ),
@@ -775,31 +696,9 @@ class Explore extends GetView<ExploreController>{
                                     )
                                         : const Center(child: Icon(Icons.movie)),
                                   ),
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        // TODO: Add anime to watchlist.
-                                      },
-                                      child: Container(
-                                        width: 28,
-                                        height: 28,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.25),
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: const Color(0xFFFFD700),
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.add,
-                                          color: Color(0xFFFFD700),
-                                          size: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+
+
+                                  buildAddShowButton(show),
                                 ],
                               ),
                             ),
@@ -853,6 +752,38 @@ class Explore extends GetView<ExploreController>{
         ),
       ),
     );
+  }
+
+  Widget buildAddShowButton(TvShow show) {
+    return Obx(() {
+      final isAdded = controller.addedShowIds.contains(show.id);
+
+      return Positioned(
+        top: 5,
+        right: 5,
+        child: GestureDetector(
+          onTap: isAdded ? null : () => controller.addShow(show),
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: isAdded
+                  ? const Color(0xFFFFD700)
+                  : Colors.black.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xFFFFD700),
+              ),
+            ),
+            child: Icon(
+              isAdded ? Icons.check : Icons.add,
+              color: isAdded ? Colors.black : const Color(0xFFFFD700),
+              size: 18,
+            ),
+          ),
+        ),
+      );
+    });
   }
 
 }

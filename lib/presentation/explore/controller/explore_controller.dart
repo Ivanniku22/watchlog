@@ -6,9 +6,14 @@ import 'package:get/get.dart';
 
 import '../../../data/models/tmdb_models/popular.dart';
 import '../../../data/repositories/tmdb_repostiory.dart';
+import '../../../data/repositories/watch_history_repository.dart';
 
 class ExploreController extends GetxController {
   final TmdbRepository tmdbRepository = Get.find<TmdbRepository>();
+  final WatchHistoryRepository watchHistoryRepository =
+  Get.find<WatchHistoryRepository>();
+
+  final addedShowIds = <int>{}.obs;
 
   // Existing data
   final popularTvShows = Rxn<Popular>();
@@ -41,7 +46,7 @@ class ExploreController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
+    loadAddedShows();
     fetchPopularTvShows();
     fetchTopRatedTvShows();
     fetchPopularAnime();
@@ -143,6 +148,100 @@ class ExploreController extends GetxController {
       await tmdbRepository.getNewAnime();
     } catch (e) {
       debugPrint('Error details: $e');
+    }
+  }
+
+  Future<void> loadAddedShows() async {
+    try {
+      final shows = await watchHistoryRepository.getAddedShows();
+
+      addedShowIds.assignAll(
+        shows.map((show) => show['showId'] as int),
+      );
+    } catch (e) {
+      debugPrint('Error loading added shows: $e');
+    }
+  }
+
+  Future<void> addShow(TvShow show) async {
+    if (addedShowIds.contains(show.id)) return;
+
+    try {
+      await watchHistoryRepository.addShow(
+        showId: show.id,
+        showTitle: show.name,
+        posterPath: show.posterPath,
+        backdropPath: show.backdropPath,
+      );
+
+      // Update the UI after Firestore confirms the save.
+      addedShowIds.add(show.id);
+
+      Get.snackbar(
+        '',
+        '',
+        titleText: const SizedBox.shrink(),
+        messageText: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD700),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.check,
+                color: Colors.black,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Added to your library',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    show.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF252525),
+        borderRadius: 14,
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+        animationDuration: const Duration(milliseconds: 300),
+        isDismissible: true,
+        forwardAnimationCurve: Curves.easeOutBack,
+      );
+    } catch (e) {
+      debugPrint('Error adding show: $e');
+
+      Get.snackbar(
+        'Error',
+        'Could not add ${show.name}. Please try again.',
+      );
     }
   }
 
