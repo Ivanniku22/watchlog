@@ -100,6 +100,27 @@ class WatchHistoryRepository {
     return snapshot.docs.map((doc) => doc.data()).toList();
   }
 
+  Stream<List<Map<String, dynamic>>> watchAddedShows() {
+    return _addedShows
+        .orderBy('addedAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+          .map((doc) => doc.data())
+          .toList(),
+    );
+  }
+
+  Stream<List<Map<String, dynamic>>> watchWatchedEpisodes() {
+    return _watchedEpisodes
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+          .map((doc) => doc.data())
+          .toList(),
+    );
+  }
+
   Future<void> addMovie({
     required int movieId,
     required String movieTitle,
