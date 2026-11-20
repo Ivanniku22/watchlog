@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:watchlog/presentation/explore/controller/explore_controller.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../data/models/tmdb_models/popular.dart';
+import '../../../data/models/tmdb_models/search_result.dart';
 
 class Explore extends GetView<ExploreController>{
 
@@ -51,6 +52,7 @@ class Explore extends GetView<ExploreController>{
               const SizedBox(height: 10),
 
              // Search Results
+
               Obx(() {
                 if (controller.searchQuery.value.isEmpty) {
                   return const SizedBox.shrink();
@@ -74,14 +76,13 @@ class Explore extends GetView<ExploreController>{
                   );
                 }
 
-                final shows =
-                    controller.searchResults.value?.results ?? [];
+                final results = controller.searchResults.value ?? [];
 
-                if (shows.isEmpty) {
+                if (results.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.all(20),
                     child: Center(
-                      child: Text('No shows found.'),
+                      child: Text('No movies or shows found.'),
                     ),
                   );
                 }
@@ -89,7 +90,7 @@ class Explore extends GetView<ExploreController>{
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: shows.length,
+                  itemCount: results.length,
                   gridDelegate:
                   const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
@@ -98,22 +99,29 @@ class Explore extends GetView<ExploreController>{
                     childAspectRatio: 0.8,
                   ),
                   itemBuilder: (context, index) {
-                    final show = shows[index];
-                    final posterPath = show.posterPath;
+                    final result = results[index];
+                    final posterPath = result.posterPath;
 
                     return GestureDetector(
                       onTap: () {
-                        Get.toNamed(
-                          AppRoutes.showDetails,
-                          arguments: show,
-                        );
+                        if (result.isTvShow) {
+                          // We'll keep the existing TV details page.
+                          // SearchResult will need conversion to TvShow first.
+                          Get.toNamed(
+                            AppRoutes.showDetails,
+                            arguments: result,
+                          );
+                        } else {
+                          // Movie details page will be implemented next.
+                        }
                       },
                       child: Stack(
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: SizedBox.expand(
-                              child: posterPath != null && posterPath.isNotEmpty
+                              child: posterPath != null &&
+                                  posterPath.isNotEmpty
                                   ? Image.network(
                                 'https://image.tmdb.org/t/p/w500$posterPath',
                                 fit: BoxFit.cover,
@@ -129,14 +137,14 @@ class Explore extends GetView<ExploreController>{
                             ),
                           ),
 
-                          // Add button — visible only if the show isn't in the library.
-                          buildAddShowButton(show),
+                          buildAddSearchResultButton(result),
                         ],
                       ),
                     );
                   },
                 );
               }),
+
 
 
               // //Filters
@@ -778,6 +786,44 @@ class Explore extends GetView<ExploreController>{
             child: Icon(
               isAdded ? Icons.check : Icons.add,
               color: isAdded ? Colors.black : const Color(0xFFFFD700),
+              size: 18,
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget buildAddSearchResultButton(SearchResult result) {
+    return Obx(() {
+      final isAdded = result.isMovie
+          ? controller.addedMovieIds.contains(result.id)
+          : controller.addedShowIds.contains(result.id);
+
+      return Positioned(
+        top: 5,
+        right: 5,
+        child: GestureDetector(
+          onTap: isAdded
+              ? null
+              : () => controller.addSearchResult(result),
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: isAdded
+                  ? const Color(0xFFFFD700)
+                  : Colors.black.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: const Color(0xFFFFD700),
+              ),
+            ),
+            child: Icon(
+              isAdded ? Icons.check : Icons.add,
+              color: isAdded
+                  ? Colors.black
+                  : const Color(0xFFFFD700),
               size: 18,
             ),
           ),

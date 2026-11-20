@@ -39,6 +39,34 @@ class WatchHistoryRepository {
         .collection('added_shows');
   }
 
+  CollectionReference<Map<String, dynamic>> get _addedMovies {
+    final user = _auth.currentUser;
+
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    return _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('added_movies');
+  }
+
+  CollectionReference<Map<String, dynamic>> get _watchedMovies {
+    final user = _auth.currentUser;
+
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    return _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('watched_movies');
+  }
+
+
+
   Future<void> addShow({
     required int showId,
     required String showTitle,
@@ -70,6 +98,115 @@ class WatchHistoryRepository {
         .get();
 
     return snapshot.docs.map((doc) => doc.data()).toList();
+  }
+
+  Future<void> addMovie({
+    required int movieId,
+    required String movieTitle,
+    String? posterPath,
+    String? backdropPath,
+  }) async {
+    final data = <String, dynamic>{
+      'movieId': movieId,
+      'movieTitle': movieTitle,
+      'addedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (posterPath != null) {
+      data['posterPath'] = posterPath;
+    }
+
+    if (backdropPath != null) {
+      data['backdropPath'] = backdropPath;
+    }
+
+    await _addedMovies
+        .doc(movieId.toString())
+        .set(data, SetOptions(merge: true));
+  }
+
+  Future<List<Map<String, dynamic>>> getAddedMovies() async {
+    final snapshot = await _addedMovies
+        .orderBy('addedAt', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) => doc.data()).toList();
+  }
+
+  Future<QuerySnapshot<Map<String, dynamic>>> getAddedMoviesPage({
+    DocumentSnapshot<Map<String, dynamic>>? lastDocument,
+    int limit = 20,
+  }) async {
+    Query<Map<String, dynamic>> query = _addedMovies
+        .orderBy('addedAt', descending: true)
+        .limit(limit);
+
+    if (lastDocument != null) {
+      query = query.startAfterDocument(lastDocument);
+    }
+
+    return query.get();
+  }
+
+  Future<void> updateMoviePosters({
+    required int movieId,
+    String? posterPath,
+    String? backdropPath,
+  }) async {
+    final data = <String, dynamic>{};
+
+    if (posterPath != null) {
+      data['posterPath'] = posterPath;
+    }
+
+    if (backdropPath != null) {
+      data['backdropPath'] = backdropPath;
+    }
+
+    if (data.isEmpty) return;
+
+    await _addedMovies
+        .doc(movieId.toString())
+        .set(data, SetOptions(merge: true));
+  }
+
+  Future<void> markMovieWatched({
+    required int movieId,
+    required String movieTitle,
+    DateTime? watchedAt,
+  }) async {
+    await _watchedMovies.doc(movieId.toString()).set({
+      'movieId': movieId,
+      'movieTitle': movieTitle,
+      'watchedAt': Timestamp.fromDate(
+        watchedAt ?? DateTime.now(),
+      ),
+    }, SetOptions(merge: true));
+  }
+
+  Future<bool> isMovieWatched(int movieId) async {
+    final document = await _watchedMovies
+        .doc(movieId.toString())
+        .get();
+
+    return document.exists;
+  }
+
+  Future<void> markMovieUnwatched(int movieId) async {
+    await _watchedMovies.doc(movieId.toString()).delete();
+  }
+
+  Future<List<Map<String, dynamic>>> getWatchedMovies() async {
+    final snapshot = await _watchedMovies
+        .orderBy('watchedAt', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) => doc.data()).toList();
+  }
+
+  Future<void> removeMovie(int movieId) async {
+    await _addedMovies.doc(movieId.toString()).delete();
+    await _watchedMovies.doc(movieId.toString()).delete();
   }
 
   Future<QuerySnapshot<Map<String, dynamic>>> getAddedShowsPage({

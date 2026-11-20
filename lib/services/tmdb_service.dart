@@ -71,4 +71,14 @@ class TmdbService {
     );
   }
 
+  Future<Response> searchMulti(String query) {
+    return _dio.get(
+      '/search/multi',
+      queryParameters: {
+        'query': query,
+        'include_adult': false,
+      },
+    );
+  }
+
 }

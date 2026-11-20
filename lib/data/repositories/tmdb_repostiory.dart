@@ -1,6 +1,7 @@
 import 'package:watchlog/data/models/tmdb_models/popular.dart';
 
 import '../../services/tmdb_service.dart';
+import '../models/tmdb_models/search_result.dart';
 
 class TmdbRepository {
   final TmdbService tmdbService;
@@ -55,6 +56,19 @@ class TmdbRepository {
   Future<Popular> searchTvShows(String query) async {
     final response = await tmdbService.searchTvShows(query);
     return Popular.fromJson(response.data);
+  }
+
+  Future<List<SearchResult>> searchMulti(String query) async {
+    final response = await tmdbService.searchMulti(query);
+
+    final results = response.data['results'] as List;
+
+    return results
+        .where((item) =>
+    item['media_type'] == 'movie' ||
+        item['media_type'] == 'tv')
+        .map((item) => SearchResult.fromJson(item))
+        .toList();
   }
 
 }

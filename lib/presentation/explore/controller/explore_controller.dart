@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../data/models/tmdb_models/popular.dart';
+import '../../../data/models/tmdb_models/search_result.dart';
 import '../../../data/repositories/tmdb_repostiory.dart';
 import '../../../data/repositories/watch_history_repository.dart';
 
@@ -14,6 +15,7 @@ class ExploreController extends GetxController {
   Get.find<WatchHistoryRepository>();
 
   final addedShowIds = <int>{}.obs;
+  final addedMovieIds = <int>{}.obs;
 
   // Existing data
   final popularTvShows = Rxn<Popular>();
@@ -36,7 +38,7 @@ class ExploreController extends GetxController {
   // Search
   final searchTextController = TextEditingController();
   final searchQuery = ''.obs;
-  final searchResults = Rxn<Popular>();
+  final searchResults = Rxn<List<SearchResult>>();
   final isSearching = false.obs;
   final searchError = ''.obs;
 
@@ -47,6 +49,7 @@ class ExploreController extends GetxController {
   void onInit() {
     super.onInit();
     loadAddedShows();
+    loadAddedMovies();
     fetchPopularTvShows();
     fetchTopRatedTvShows();
     fetchPopularAnime();
@@ -61,7 +64,6 @@ class ExploreController extends GetxController {
 
     _searchDebounce?.cancel();
 
-    // Invalidate any previous request immediately.
     final requestId = ++_searchRequestId;
 
     if (queryText.isEmpty) {
@@ -81,7 +83,7 @@ class ExploreController extends GetxController {
           isSearching.value = true;
 
           final results =
-          await tmdbRepository.searchTvShows(queryText);
+          await tmdbRepository.searchMulti(queryText);
 
           if (requestId != _searchRequestId) return;
 
@@ -90,9 +92,9 @@ class ExploreController extends GetxController {
           if (requestId != _searchRequestId) return;
 
           searchError.value =
-          'Unable to search shows. Please try again.';
+          'Unable to search. Please try again.';
 
-          debugPrint('TV Show Search Error: $e');
+          debugPrint('Multi Search Error: $e');
         } finally {
           if (requestId == _searchRequestId) {
             isSearching.value = false;
@@ -160,6 +162,18 @@ class ExploreController extends GetxController {
       );
     } catch (e) {
       debugPrint('Error loading added shows: $e');
+    }
+  }
+
+  Future<void> loadAddedMovies() async {
+    try {
+      final movies = await watchHistoryRepository.getAddedMovies();
+
+      addedMovieIds.assignAll(
+        movies.map((movie) => movie['movieId'] as int),
+      );
+    } catch (e) {
+      debugPrint('Error loading added movies: $e');
     }
   }
 
@@ -242,6 +256,52 @@ class ExploreController extends GetxController {
         'Error',
         'Could not add ${show.name}. Please try again.',
       );
+    }
+  }
+
+  Future<void> addSearchResult(SearchResult result) async {
+    if (result.isMovie) {
+      if (addedMovieIds.contains(result.id)) return;
+
+      try {
+        await watchHistoryRepository.addMovie(
+          movieId: result.id,
+          movieTitle: result.title,
+          posterPath: result.posterPath,
+          backdropPath: result.backdropPath,
+        );
+
+        addedMovieIds.add(result.id);
+
+        Get.snackbar(
+          'Added',
+          '${result.title} added to your movie library.',
+        );
+      } catch (e) {
+        debugPrint('Error adding movie: $e');
+        Get.snackbar('Error', 'Could not add ${result.title}.');
+      }
+    } else if (result.isTvShow) {
+      if (addedShowIds.contains(result.id)) return;
+
+      try {
+        await watchHistoryRepository.addShow(
+          showId: result.id,
+          showTitle: result.title,
+          posterPath: result.posterPath,
+          backdropPath: result.backdropPath,
+        );
+
+        addedShowIds.add(result.id);
+
+        Get.snackbar(
+          'Added',
+          '${result.title} added to your library.',
+        );
+      } catch (e) {
+        debugPrint('Error adding show: $e');
+        Get.snackbar('Error', 'Could not add ${result.title}.');
+      }
     }
   }
 
