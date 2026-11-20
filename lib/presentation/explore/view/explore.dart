@@ -104,15 +104,32 @@ class Explore extends GetView<ExploreController>{
 
                     return GestureDetector(
                       onTap: () {
-                        if (result.isTvShow) {
-                          // We'll keep the existing TV details page.
-                          // SearchResult will need conversion to TvShow first.
+                        if (result.isMovie) {
                           Get.toNamed(
-                            AppRoutes.showDetails,
+                            AppRoutes.movieDetails,
                             arguments: result,
                           );
-                        } else {
-                          // Movie details page will be implemented next.
+                        } else if (result.isTvShow) {
+                          Get.toNamed(
+                            AppRoutes.showDetails,
+                            arguments: TvShow(
+                              id: result.id,
+                              name: result.title,
+                              posterPath: result.posterPath,
+                              backdropPath: result.backdropPath,
+                              adult: false,
+                              genreIds: [],
+                              originCountry: [],
+                              originalLanguage: '',
+                              originalName: result.title,
+                              overview: result.overview,
+                              popularity: 0,
+                              firstAirDate: result.releaseDate,
+                              softcore: false,
+                              voteAverage: result.voteAverage,
+                              voteCount: 0,
+                            ),
+                          );
                         }
                       },
                       child: Stack(

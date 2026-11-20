@@ -10,6 +10,8 @@ import '../../presentation/explore/bindings/explore_binding.dart';
 import '../../presentation/explore/view/explore.dart';
 import '../../presentation/login/bindings/login_binding.dart';
 import '../../presentation/login/view/login.dart';
+import '../../presentation/movie_details/bindings/movie_details_binding.dart';
+import '../../presentation/movie_details/views/movie_details_view.dart';
 import '../../presentation/movies/bindings/movies_binding.dart';
 import '../../presentation/movies/view/movies.dart';
 import '../../presentation/profile/bindings/profile_binding.dart';
@@ -68,6 +70,13 @@ class AppPages {
       page: () => const AllShowsView(),
       binding: AllShowsBinding(),
       transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 350),
+    ),
+    GetPage(
+      name: AppRoutes.movieDetails,
+      page: () => const MovieDetailsView(),
+      binding: MovieDetailsBinding(),
+      transition: Transition.downToUp,
       transitionDuration: const Duration(milliseconds: 350),
     ),
   ];

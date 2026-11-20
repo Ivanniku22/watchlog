@@ -7,4 +7,5 @@ class AppRoutes {
   static const showDetails = '/show-details';
   static const episodeDetails = '/episode-details';
   static const allShows = '/all-shows';
+  static const movieDetails = '/movie-details';
 }

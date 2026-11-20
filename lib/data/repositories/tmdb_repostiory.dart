@@ -71,4 +71,9 @@ class TmdbRepository {
         .toList();
   }
 
+  Future<Map<String, dynamic>> getMovieDetails(int id) async {
+    final response = await tmdbService.getMovieDetails(id);
+    return response.data as Map<String, dynamic>;
+  }
+
 }
