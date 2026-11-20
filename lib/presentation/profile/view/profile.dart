@@ -358,7 +358,9 @@ class Profile extends GetView<ProfileController>{
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Get.toNamed(AppRoutes.allMovies);
+                        },
                         icon: Icon(
                           Icons.keyboard_arrow_right_outlined,
                           color: Theme.of(context).iconTheme.color,

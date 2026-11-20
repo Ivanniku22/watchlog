@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import 'package:watchlog/presentation/all_movies/bindings/all_movies_binding.dart';
+import 'package:watchlog/presentation/all_movies/views/all_movies_view.dart';
 import 'package:watchlog/presentation/show_details/bindings/show_details_bindings.dart';
 import 'package:watchlog/presentation/show_details/view/show_details_view.dart';
 
@@ -69,6 +71,13 @@ class AppPages {
       name: AppRoutes.allShows,
       page: () => const AllShowsView(),
       binding: AllShowsBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 350),
+    ),
+    GetPage(
+      name: AppRoutes.allMovies,
+      page: () => const AllMoviesView(),
+      binding: AllMoviesBinding(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 350),
     ),
