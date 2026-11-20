@@ -72,6 +72,21 @@ class WatchHistoryRepository {
     return snapshot.docs.map((doc) => doc.data()).toList();
   }
 
+  Future<QuerySnapshot<Map<String, dynamic>>> getAddedShowsPage({
+    DocumentSnapshot<Map<String, dynamic>>? lastDocument,
+    int limit = 20,
+  }) async {
+    Query<Map<String, dynamic>> query = _addedShows
+        .orderBy('addedAt', descending: true)
+        .limit(limit);
+
+    if (lastDocument != null) {
+      query = query.startAfterDocument(lastDocument);
+    }
+
+    return await query.get();
+  }
+
   Future<int> importWatchedShowsToLibrary() async {
     // Read existing watched episodes.
     final episodesSnapshot = await _watchedEpisodes.get();

@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:watchlog/data/upcoming_movie_data.dart';
 import 'package:watchlog/presentation/profile/controller/profile_controller.dart';
 
+import '../../../app/routes/app_routes.dart';
+
 class Profile extends GetView<ProfileController>{
 
   const Profile ({super.key});
@@ -275,7 +277,9 @@ class Profile extends GetView<ProfileController>{
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Get.toNamed(AppRoutes.allShows);
+                        },
                         icon: Icon(
                           Icons.keyboard_arrow_right_outlined,
                           color: Theme.of(context).iconTheme.color,

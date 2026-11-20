@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import 'package:watchlog/presentation/show_details/bindings/show_details_bindings.dart';
 import 'package:watchlog/presentation/show_details/view/show_details_view.dart';
 
+import '../../presentation/all_shows/bindings/all_shows_binding.dart';
+import '../../presentation/all_shows/views/all_shows_view.dart';
 import '../../presentation/episode_details/bindings/episode_details_binding.dart';
 import '../../presentation/episode_details/view/episode_details_view.dart';
 import '../../presentation/explore/bindings/explore_binding.dart';
@@ -59,6 +61,13 @@ class AppPages {
       page: () => const EpisodeDetailsView(),
       binding: EpisodeDetailsBinding(),
       transition: Transition.downToUp,
+      transitionDuration: const Duration(milliseconds: 350),
+    ),
+    GetPage(
+      name: AppRoutes.allShows,
+      page: () => const AllShowsView(),
+      binding: AllShowsBinding(),
+      transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 350),
     ),
   ];
