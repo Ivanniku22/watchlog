@@ -4,8 +4,9 @@ import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/show_repository.dart';
 import '../../profile/controller/profile_controller.dart';
 import '../controller/shows_view_controller.dart';
-import '../upcoming/controller/upcoming_controller.dart';
 import '../watch_list/controller/watchlist_controller.dart';
+import '../../../data/repositories/watch_history_repository.dart';
+import '../../../data/repositories/tmdb_repostiory.dart';
 
 class ShowsBinding extends Bindings {
   @override
@@ -16,10 +17,10 @@ class ShowsBinding extends Bindings {
     );
     Get.lazyPut<WatchlistController>(
           () => WatchlistController(
-        showRepository: Get.find<ShowRepository>(),
+        watchHistoryRepository: Get.find<WatchHistoryRepository>(),
+        tmdbRepository: Get.find<TmdbRepository>(),
       ),
     );
-    Get.lazyPut<UpcomingController>(() => UpcomingController());
     Get.lazyPut<ProfileController>(
       () => ProfileController(authRepository: Get.find<AuthRepository>()),
     );

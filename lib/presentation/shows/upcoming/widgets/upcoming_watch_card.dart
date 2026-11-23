@@ -1,163 +1,163 @@
-// import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:flutter/material.dart';
-import 'package:watchlog/data/models/upcoming_show_model.dart';
 
-class UpcomingWatchCard extends StatefulWidget {
+import '../../../../data/models/watchlist_models/next_episode.dart';
 
-  final UpcomingShow upcomingShow;
-  const UpcomingWatchCard({super.key , required this.upcomingShow});
+class UpcomingWatchCard extends StatelessWidget {
+  final WatchlistEpisode episode;
 
-  @override
-  State<UpcomingWatchCard> createState() => _UpcomingWatchCardState();
-}
+  const UpcomingWatchCard({
+    super.key,
+    required this.episode,
+  });
 
-class _UpcomingWatchCardState extends State<UpcomingWatchCard> {
   @override
   Widget build(BuildContext context) {
-    return  Column(
+    final theme = Theme.of(context);
+
+    final posterUrl = episode.posterPath != null &&
+        episode.posterPath!.isNotEmpty
+        ? 'https://image.tmdb.org/t/p/w200${episode.posterPath}'
+        : null;
+
+    final airDate = episode.airDate;
+
+    return Column(
       children: [
         Container(
           height: 100,
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-              color: Theme.of(context).cardTheme.color,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: Colors.grey.shade900,
-                width: 1,
+            color: theme.cardTheme.color,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: Colors.grey.shade900,
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.10),
+                blurRadius: 10,
+                spreadRadius: 0,
+                offset: const Offset(0, 3),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.10),
-                  blurRadius: 10,
-                  spreadRadius: 0,
-                  offset: const Offset(0, 3),
-                )
-              ]
+            ],
           ),
           child: Row(
             children: [
+              // Poster
               ClipRRect(
                 borderRadius: BorderRadius.circular(6),
-                child:
-
-                // CachedNetworkImage(
-                //   imageUrl: widget.upcomingShow.poster,
-                //   fit: BoxFit.cover,
-                //   memCacheWidth: 300,
-                //   placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                //   errorWidget: (context, url, error) => const Icon(Icons.error),
-                // ),
-
-
-                Image.network(
-                  widget.upcomingShow.poster,
+                child: posterUrl != null
+                    ? Image.network(
+                  posterUrl,
                   width: 60,
                   height: 72,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const SizedBox(
+                      width: 60,
+                      height: 72,
+                      child: Icon(Icons.tv),
+                    );
+                  },
+                )
+                    : const SizedBox(
+                  width: 60,
+                  height: 72,
+                  child: Icon(Icons.tv),
                 ),
               ),
 
               const SizedBox(width: 12),
 
+              // Show and episode information
               Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-
-                      // Show Name
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 1.5,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                            color: Theme.of(context).cardTheme.color,
-                            borderRadius: BorderRadius.circular(30),
-                            border: Border.all(
-                              color: Colors.white, // Border color
-                              width: 1,
-                            )
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 4.0 , right: 2.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                 widget.upcomingShow.title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ),
-                              SizedBox(width: 4),
-                              Icon(
-                                Icons.chevron_right,
-                                size: 15,
-                              )
-                            ],
-                          ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Show name
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 1.5,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.cardTheme.color,
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 1,
                         ),
                       ),
-
-                      SizedBox(height: 6,),
-
-                      // Season and Episodes Count
-                      RichText(
-                        text: TextSpan(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 4,
+                          right: 2,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-
-                            TextSpan(
-                              text: "${widget.upcomingShow.episode} | ${widget.upcomingShow.season}",
-                              style: Theme.of(context).textTheme.bodyMedium,
+                            Flexible(
+                              child: Text(
+                                episode.showTitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.chevron_right,
+                              size: 15,
                             ),
                           ],
                         ),
                       ),
+                    ),
 
+                    const SizedBox(height: 6),
 
-                      // Episode Title
-                      Flexible(
-                        child: Text(
-                          widget.upcomingShow.episodeTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
+                    // Season and episode number
+                    Text(
+                      'S${episode.seasonNumber} | E${episode.episodeNumber}',
+                      style: theme.textTheme.bodyMedium,
+                    ),
+
+                    // Episode title
+                    Flexible(
+                      child: Text(
+                        episode.episodeTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium,
                       ),
-
-                    ],
-                  )
+                    ),
+                  ],
+                ),
               ),
 
-              Column(
-                children: [
-                  Flexible(
-                    child: Text(
-                      widget.upcomingShow.time,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                  Flexible(
-                    child: Text(
-                      widget.upcomingShow.studio,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  )
-                ],
-              ),
+              const SizedBox(width: 8),
 
+              // Air date
+              SizedBox(
+                width: 65,
+                child: Text(
+                  airDate != null
+                      ? '${airDate.day}/${airDate.month}/${airDate.year}'
+                      : 'TBA',
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
             ],
           ),
         ),
-        SizedBox(height: 5,)
+
+        const SizedBox(height: 5),
       ],
     );
   }

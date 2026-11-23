@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:watchlog/data/upcoming_movie_data.dart';
 import 'package:watchlog/presentation/profile/controller/profile_controller.dart';
 
 import '../../../app/routes/app_routes.dart';

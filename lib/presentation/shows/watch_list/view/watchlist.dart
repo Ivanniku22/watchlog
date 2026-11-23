@@ -2,11 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../data/models/watchlist_models/next_episode.dart';
 import '../controller/watchlist_controller.dart';
 import '../widgets/watch_card.dart';
 
 class Watchlist extends GetView<WatchlistController> {
   const Watchlist({super.key});
+
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +23,11 @@ class Watchlist extends GetView<WatchlistController> {
         );
       }
 
-      final shows = controller.myShows;
+      final currentlyWatching = controller.currentlyWatching;
+      final planToWatch = controller.planToWatch;
 
-      if (shows.isEmpty) {
+      if (currentlyWatching.isEmpty &&
+          planToWatch.isEmpty) {
         return const Center(
           child: Text('Your watchlist is empty.'),
         );
@@ -39,25 +43,62 @@ class Watchlist extends GetView<WatchlistController> {
           ),
           child: Column(
             children: [
-              _sectionTitle(context, 'Your Shows'),
-              const SizedBox(height: 10),
+              _buildSection(
+                context,
+                'Currently Watching',
+                currentlyWatching,
+              ),
 
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: shows.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: WatchCard(show: shows[index]),
-                  );
-                },
+              _buildSection(
+                context,
+                'Plan to Watch',
+                planToWatch,
               ),
             ],
           ),
         ),
       );
     });
+  }
+
+
+  Widget _buildSection(
+      BuildContext context,
+      String title,
+      List<WatchlistEpisode> episodes,
+      ) {
+    if (episodes.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        _sectionTitle(context, title),
+        const SizedBox(height: 10),
+
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: episodes.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: WatchCard(
+                episode: episodes[index],
+                onTap: () {
+                  controller.openEpisodeDetails(episodes[index]);
+                },
+                onMarkWatched: () {
+                  controller.markEpisodeWatched(episodes[index]);
+                },
+              ),
+            );
+          },
+        ),
+
+        const SizedBox(height: 15),
+      ],
+    );
   }
 
   Widget _sectionTitle(BuildContext context, String title) {
