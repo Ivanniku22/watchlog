@@ -1,8 +1,9 @@
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:watchlog/presentation/show_details/controller/show_details_controller.dart';
 
+import '../controller/show_details_controller.dart';
 import '../widgets/about_tab.dart';
 import '../widgets/episodes_tab.dart';
 
@@ -30,10 +31,12 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
                       // Backdrop image
                       Positioned.fill(
                         child: Image.network(
-                          'https://image.tmdb.org/t/p/w780${controller.show.backdropPath}',
+                          'https://image.tmdb.org/t/p/w780${controller.show.backdropPath ?? ''}',
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return Container(color: Colors.grey.shade900);
+                            return Container(
+                              color: Colors.grey.shade900,
+                            );
                           },
                         ),
                       ),
@@ -53,7 +56,8 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
                             vertical: 5,
                           ),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
                             children: [
                               IconButton(
                                 onPressed: () => Get.back(),
@@ -63,18 +67,66 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
                                   size: 30,
                                 ),
                               ),
-                              PopupMenuButton<String>(
-                                icon: const Icon(
-                                  Icons.more_horiz,
-                                  color: Colors.white,
-                                  size: 25,
-                                ),
-                                itemBuilder: (context) => const [
-                                  PopupMenuItem(
-                                    value: 'watchlist',
-                                    child: Text('Add to watchlist'),
+
+                              // Three-dot menu
+                              Obx(
+                                    () => PopupMenuButton<String>(
+                                  icon: const Icon(
+                                    Icons.more_horiz,
+                                    color: Colors.white,
+                                    size: 25,
                                   ),
-                                ],
+                                  enabled:
+                                  !controller.isUpdatingWatchlist.value,
+                                  onSelected: (value) {
+                                    if (value == 'add') {
+                                      controller.addToWatchlist();
+                                    } else if (value == 'remove') {
+                                      _showRemoveConfirmation(context);
+                                    }
+                                  },
+                                  itemBuilder: (context) {
+                                    if (controller.isShowAdded.value) {
+                                      return const [
+                                        PopupMenuItem(
+                                          value: 'remove',
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                CupertinoIcons.trash,
+                                                color: Colors.red,
+                                                size: 19,
+                                              ),
+                                              SizedBox(width: 10),
+                                              Text(
+                                                'Remove from Watchlist',
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ];
+                                    }
+
+                                    return const [
+                                      PopupMenuItem(
+                                        value: 'add',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              CupertinoIcons.add,
+                                              size: 19,
+                                            ),
+                                            SizedBox(width: 10),
+                                            Text('Add to Watchlist'),
+                                          ],
+                                        ),
+                                      ),
+                                    ];
+                                  },
+                                ),
                               ),
                             ],
                           ),
@@ -88,7 +140,8 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
                           padding: const EdgeInsets.all(20),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
                             children: [
                               Text(
                                 controller.show.name,
@@ -100,6 +153,7 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
                                   color: Colors.white,
                                 ),
                               ),
+
                               const SizedBox(height: 8),
 
                               // Metadata loading skeleton and details
@@ -113,7 +167,8 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
                                         color: Colors.grey.withValues(
                                           alpha: 0.35,
                                         ),
-                                        borderRadius: BorderRadius.circular(6),
+                                        borderRadius:
+                                        BorderRadius.circular(6),
                                       ),
                                     );
                                   }
@@ -138,6 +193,7 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
 
                                 final seasons =
                                 details['number_of_seasons'];
+
                                 final episodes =
                                 details['number_of_episodes'];
 
@@ -163,11 +219,15 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
                                   WrapCrossAlignment.center,
                                   children: [
                                     if (seasons != null)
-                                      Text('$seasons Seasons •',
-                                          style: metadataStyle),
+                                      Text(
+                                        '$seasons Seasons •',
+                                        style: metadataStyle,
+                                      ),
                                     if (episodes != null)
-                                      Text('$episodes Episodes •',
-                                          style: metadataStyle),
+                                      Text(
+                                        '$episodes Episodes •',
+                                        style: metadataStyle,
+                                      ),
                                     ...genres.map(
                                           (genre) => Text(
                                         genre,
@@ -186,15 +246,17 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
                 ),
               ),
 
-              // Pinned tabs beneath the collapsible header
+              // Pinned tabs beneath collapsible header
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _TabBarHeaderDelegate(
                   TabBar(
                     indicatorSize: TabBarIndicatorSize.tab,
                     dividerColor: Colors.transparent,
-                    labelColor: Theme.of(context).colorScheme.onSurfaceVariant,
-                    unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                    labelColor:
+                    Theme.of(context).colorScheme.onSurfaceVariant,
+                    unselectedLabelColor:
+                    Theme.of(context).colorScheme.onSurfaceVariant,
                     labelStyle: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -215,20 +277,109 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
           },
 
           // Tab content
-          body: TabBarView(
+          body: const TabBarView(
             children: [
               AboutTab(),
               EpisodesTab(),
             ],
           ),
         ),
+
+        // Floating bottom watchlist button
+        bottomNavigationBar: Obx(() {
+          if (controller.isCheckingWatchlist.value) {
+            return const SizedBox.shrink();
+          }
+
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+              child: SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton.icon(
+                  onPressed: controller.isUpdatingWatchlist.value
+                      ? null
+                      : controller.isShowAdded.value
+                      ? null
+                      : controller.addToWatchlist,
+                  icon: controller.isUpdatingWatchlist.value
+                      ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.black,
+                    ),
+                  )
+                      : Icon(
+                    controller.isShowAdded.value
+                        ? CupertinoIcons.check_mark
+                        : CupertinoIcons.add,
+                    color: Colors.black,
+                  ),
+                  label: Text(
+                    controller.isUpdatingWatchlist.value
+                        ? 'Please wait...'
+                        : controller.isShowAdded.value
+                        ? 'Added to Watchlist'
+                        : 'Add to Watchlist',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    disabledBackgroundColor:
+                    const Color(0xFFFFD700),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // Confirmation dialog
+  void _showRemoveConfirmation(BuildContext context) {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: Theme.of(context).cardColor,
+        title: const Text('Remove from Watchlist?'),
+        content: Text(
+          'Are you sure you want to remove '
+              '${controller.show.name} from your watchlist?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              controller.removeFromWatchlist();
+            },
+            child: const Text(
+              'Remove',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
 // Keeps the TabBar pinned beneath the collapsing header.
-
 class _TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
   final double topInset;
@@ -265,4 +416,3 @@ class _TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
         oldDelegate.topInset != topInset;
   }
 }
-

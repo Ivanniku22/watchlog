@@ -542,5 +542,14 @@ class WatchHistoryRepository {
     };
   }
 
+  Future<bool> isShowAdded(int showId) async {
+    final document = await _addedShows.doc(showId.toString()).get();
+    return document.exists;
+  }
 
+  Future<void> removeShowFromWatchlist(int showId) async {
+    // Only remove the show from added_shows.
+    // Keep all watched episode history intact.
+    await _addedShows.doc(showId.toString()).delete();
+  }
 }

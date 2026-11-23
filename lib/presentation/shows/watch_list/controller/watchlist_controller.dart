@@ -146,6 +146,7 @@ class WatchlistController extends GetxController {
   // LOAD LIBRARY SHOWS
   // --------------------------------------------------
 
+
   void loadMyShows() {
     isLoading.value = true;
     errorMessage.value = '';
@@ -164,7 +165,26 @@ class WatchlistController extends GetxController {
                 });
               }).toList();
 
+              // Update the main library list.
               myShows.assignAll(convertedShows);
+
+              // Get IDs of shows that still exist in the library.
+              final activeShowIds = convertedShows
+                  .map((show) => show.tmdbId)
+                  .toSet();
+
+              // Remove cards belonging to shows removed from Firestore.
+              currentlyWatching.removeWhere(
+                    (episode) => !activeShowIds.contains(episode.showId),
+              );
+
+              planToWatch.removeWhere(
+                    (episode) => !activeShowIds.contains(episode.showId),
+              );
+
+              upcomingEpisodes.removeWhere(
+                    (episode) => !activeShowIds.contains(episode.showId),
+              );
 
               _hasLoadedShows = true;
 
