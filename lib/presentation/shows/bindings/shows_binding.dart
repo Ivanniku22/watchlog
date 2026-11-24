@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/show_repository.dart';
+import '../../movies/controller/movies_controller.dart';
 import '../../profile/controller/profile_controller.dart';
 import '../controller/shows_view_controller.dart';
 import '../watch_list/controller/watchlist_controller.dart';
@@ -20,6 +21,10 @@ class ShowsBinding extends Bindings {
         watchHistoryRepository: Get.find<WatchHistoryRepository>(),
         tmdbRepository: Get.find<TmdbRepository>(),
       ),
+    );
+    Get.lazyPut<MoviesController>(
+          () => MoviesController(),
+      fenix: true,
     );
     Get.lazyPut<ProfileController>(
       () => ProfileController(authRepository: Get.find<AuthRepository>()),

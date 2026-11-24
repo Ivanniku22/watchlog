@@ -45,17 +45,73 @@ class MovieDetailsController extends GetxController {
 
   Future<void> loadMovieStatus() async {
     try {
-      final addedMovies =
-      await watchHistoryRepository.getAddedMovies();
-
-      isMovieAdded.value = addedMovies.any(
-            (movie) => movie['movieId'] == this.movie.id,
-      );
+      isMovieAdded.value =
+      await watchHistoryRepository.isMovieAdded(movie.id);
 
       isMovieWatched.value =
       await watchHistoryRepository.isMovieWatched(movie.id);
     } catch (e) {
       debugPrint('Failed to load movie status: $e');
+    }
+  }
+
+  Future<void> addToWatchlist() async {
+    if (isMovieAdded.value) return;
+
+    try {
+      isUpdatingWatchStatus.value = true;
+
+      await watchHistoryRepository.addMovie(
+        movieId: movie.id,
+        movieTitle: movie.title,
+        posterPath: movie.posterPath,
+        backdropPath: movie.backdropPath,
+        releaseDate: movie.releaseDate,
+      );
+
+      isMovieAdded.value = true;
+
+      Get.snackbar(
+        'Added to library',
+        '${movie.title} has been added to your watch list.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      debugPrint('Failed to add movie: $e');
+
+      Get.snackbar(
+        'Error',
+        'Could not add this movie. Please try again.',
+      );
+    } finally {
+      isUpdatingWatchStatus.value = false;
+    }
+  }
+
+  Future<void> removeFromWatchlist() async {
+    if (!isMovieAdded.value) return;
+
+    try {
+      isUpdatingWatchStatus.value = true;
+
+      await watchHistoryRepository.removeMovieFromWatchlist(movie.id);
+
+      isMovieAdded.value = false;
+
+      Get.snackbar(
+        'Removed from library',
+        '${movie.title} has been removed from your watch list.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      debugPrint('Failed to remove movie: $e');
+
+      Get.snackbar(
+        'Error',
+        'Could not remove this movie. Please try again.',
+      );
+    } finally {
+      isUpdatingWatchStatus.value = false;
     }
   }
 

@@ -126,6 +126,7 @@ class WatchHistoryRepository {
     required String movieTitle,
     String? posterPath,
     String? backdropPath,
+    String? releaseDate,
   }) async {
     final data = <String, dynamic>{
       'movieId': movieId,
@@ -133,17 +134,55 @@ class WatchHistoryRepository {
       'addedAt': FieldValue.serverTimestamp(),
     };
 
-    if (posterPath != null) {
-      data['posterPath'] = posterPath;
-    }
-
-    if (backdropPath != null) {
-      data['backdropPath'] = backdropPath;
+    if (posterPath != null) data['posterPath'] = posterPath;
+    if (backdropPath != null) data['backdropPath'] = backdropPath;
+    if (releaseDate != null && releaseDate.isNotEmpty) {
+      data['releaseDate'] = releaseDate;
     }
 
     await _addedMovies
         .doc(movieId.toString())
         .set(data, SetOptions(merge: true));
+  }
+
+  Stream<List<Map<String, dynamic>>> watchAddedMovies() {
+    return _addedMovies
+        .orderBy('addedAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+          .map((doc) => doc.data())
+          .toList(),
+    );
+  }
+
+  Stream<List<Map<String, dynamic>>> watchWatchedMovies() {
+    return _watchedMovies
+        .orderBy('watchedAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+          .map((doc) => doc.data())
+          .toList(),
+    );
+  }
+
+  Future<bool> isMovieAdded(int movieId) async {
+    final document = await _addedMovies.doc(movieId.toString()).get();
+    return document.exists;
+  }
+
+  Future<void> removeMovieFromWatchlist(int movieId) async {
+    await _addedMovies.doc(movieId.toString()).delete();
+  }
+
+  Future<void> updateMovieReleaseDate({
+    required int movieId,
+    required String releaseDate,
+  }) async {
+    await _addedMovies.doc(movieId.toString()).set({
+      'releaseDate': releaseDate,
+    }, SetOptions(merge: true));
   }
 
   Future<List<Map<String, dynamic>>> getAddedMovies() async {

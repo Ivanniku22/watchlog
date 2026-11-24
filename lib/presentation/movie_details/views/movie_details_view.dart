@@ -29,19 +29,59 @@ class MovieDetailsView extends GetView<MovieDetailsController> {
               ),
             ),
             actions: [
-              PopupMenuButton<String>(
-                icon: const Icon(
-                  Icons.more_horiz,
-                  color: Colors.white,
-                  size: 25,
-                ),
-                itemBuilder: (context) => const [
-                  PopupMenuItem(
-                    value: 'watchlist',
-                    child: Text('Add to watchlist'),
+              Obx(
+                    () => PopupMenuButton<String>(
+                  icon: const Icon(
+                    Icons.more_horiz,
+                    color: Colors.white,
+                    size: 25,
                   ),
-                ],
-              ),
+                  onSelected: (value) {
+                    if (value == 'watchlist') {
+                      controller.addToWatchlist();
+                    } else if (value == 'remove') {
+                      Get.dialog(
+                        AlertDialog(
+                          title: const Text('Remove movie?'),
+                          content: Text(
+                            'Remove "${controller.movie.title}" from your library?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Get.back(),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Get.back();
+                                controller.removeFromWatchlist();
+                              },
+                              child: const Text('Remove'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                  itemBuilder: (context) {
+                    if (controller.isMovieAdded.value) {
+                      return const [
+                        PopupMenuItem(
+                          value: 'remove',
+                          child: Text('Remove from watch list'),
+                        ),
+                      ];
+                    }
+
+                    return const [
+                      PopupMenuItem(
+                        value: 'watchlist',
+                        child: Text('Add to watch list'),
+                      ),
+                    ];
+                  },
+                ),
+              )
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
