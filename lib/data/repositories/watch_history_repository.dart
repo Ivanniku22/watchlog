@@ -591,4 +591,10 @@ class WatchHistoryRepository {
     // Keep all watched episode history intact.
     await _addedShows.doc(showId.toString()).delete();
   }
+
+  Stream<int> watchWatchedEpisodeCount() {
+    return _watchedEpisodes
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+  }
 }

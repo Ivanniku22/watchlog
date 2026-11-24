@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -46,14 +47,21 @@ class ProfileController extends GetxController {
   final addedMovies = <Map<String, dynamic>>[].obs;
   final isLoadingMovies = false.obs;
 
+  final watchedEpisodeCount = 0.obs;
+
+  StreamSubscription<int>? _episodeCountSubscription;
+
 
   @override
   void onInit() {
     super.onInit();
+
     user.value = _authRepository.currentUser;
+
     loadAddedShows();
     loadAddedMovies();
-    // checkWatchedEpisodeCount();
+
+    listenToWatchedEpisodeCount();
   }
 
   Future<void> importTvTimeData() async {
@@ -725,6 +733,27 @@ class ProfileController extends GetxController {
     skippedCount.value++;
 
     skipReasons[reason] = (skipReasons[reason] ?? 0) + 1;
+  }
+
+  void listenToWatchedEpisodeCount() {
+    _episodeCountSubscription?.cancel();
+
+    _episodeCountSubscription =
+        _watchHistoryRepository.watchWatchedEpisodeCount().listen(
+              (count) {
+            watchedEpisodeCount.value = count;
+          },
+          onError: (error) {
+            debugPrint('Failed to load watched episode count: $error');
+          },
+        );
+  }
+
+
+  @override
+  void onClose() {
+    _episodeCountSubscription?.cancel();
+    super.onClose();
   }
 
   // Future<void> checkWatchedEpisodeCount() async {

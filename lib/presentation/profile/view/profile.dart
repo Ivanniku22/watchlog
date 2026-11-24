@@ -29,8 +29,36 @@ class Profile extends GetView<ProfileController>{
                   // Cover image
                   Positioned.fill(
                     child: Image.network(
-                      'https://static.zerochan.net/86.Eighty-Six.full.3740349.jpg',
+                      'https://static.zerochan.net/86.Eighty.Six.full.3740349.jpg',
                       fit: BoxFit.cover,
+                      cacheWidth: 900,
+                      cacheHeight: 500,
+                      filterQuality: FilterQuality.low,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+
+                        return Container(
+                          color: Colors.grey.shade900,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.yellow,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey.shade900,
+                          child: const Center(
+                            child: Icon(
+                              Icons.image_not_supported_outlined,
+                              color: Colors.white54,
+                              size: 30,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
 
@@ -120,25 +148,24 @@ class Profile extends GetView<ProfileController>{
                             Container(
                               width: 70,
                               height: 70,
-                              decoration: BoxDecoration(
+                              padding: const EdgeInsets.all(3),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
                                 shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 4,
-                                ),
                               ),
-                              clipBehavior: Clip.antiAlias,
-                              child: hasPhoto
-                                  ? Image.network(
-                                      photoUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return _ProfileAvatarFallback(
-                                          name: name,
-                                        );
-                                      },
-                                    )
-                                  : _ProfileAvatarFallback(name: name),
+                              child: ClipOval(
+                                child: hasPhoto
+                                    ? Image.network(
+                                  photoUrl,
+                                  width: 64,
+                                  height: 64,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return _ProfileAvatarFallback(name: name);
+                                  },
+                                )
+                                    : _ProfileAvatarFallback(name: name),
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -197,41 +224,11 @@ class Profile extends GetView<ProfileController>{
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Followers, Following and Comments Box
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatBox(0, 'Following', context),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildStatBox(0, 'Followers', context),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildStatBox(0, 'Comments', context),
-                      ),
-                    ],
-                  ),
 
-                  const SizedBox(height: 20),
-
-                  // Stats Heading with right arrow
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Stats',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: Icon(
-                          Icons.keyboard_arrow_right_outlined,
-                          color: Theme.of(context).iconTheme.color,
-                        ),
-                      ),
-                    ],
+                  // Stats Heading
+                  Text(
+                    'Stats',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
 
                   const SizedBox(height: 10),
@@ -244,22 +241,22 @@ class Profile extends GetView<ProfileController>{
                         SizedBox(
                           width: 150,
                           child: _buildWatchBox(
-                            1,
-                            2,
-                            100,
+                            0, 0, 0,
                             "TV Time",
                             context,
                           ),
                         ),
-                        SizedBox(width: 4,),
-                        SizedBox(
-                          width: 200,
-                          child: _buildWatchBox(
-                            1,
-                            2,
-                            100,
-                            "Episodes Watched",
-                            context,
+                        const SizedBox(width: 4),
+                        Obx(
+                              () => SizedBox(
+                            width: 200,
+                            child: _buildWatchBox(
+                              0,
+                              controller.watchedEpisodeCount.value,
+                              0,
+                              "Episodes Watched",
+                              context,
+                            ),
                           ),
                         ),
                       ],
@@ -580,36 +577,15 @@ class Profile extends GetView<ProfileController>{
 
 
 
-Widget _buildStatBox(int number, String label, BuildContext context) {
-  return Container(
-    padding: const EdgeInsets.symmetric(vertical: 10),
-    decoration: BoxDecoration(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(
-        color: Colors.grey.shade300,
-      ),
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          number.toString(),
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ],
-    ),
-  );
-}
+Widget _buildWatchBox(
+    int month,
+    int day,
+    int hours,
+    String label,
+    BuildContext context,
+    ) {
+  final isEpisodeCount = label == "Episodes Watched";
 
-
-
-Widget _buildWatchBox(int month, int day , int hours, String label, BuildContext context) {
   return Column(
     children: [
       // Top box
@@ -617,20 +593,15 @@ Widget _buildWatchBox(int month, int day , int hours, String label, BuildContext
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: Colors.transparent,
-          border: Border.all(
-            color: Colors.grey.shade500,
-          ),
+          border: Border.all(color: Colors.grey.shade500),
         ),
         child: Row(
-          spacing: 2,
           children: [
-            IconButton(
-                onPressed: (){},
-                icon: Icon(Icons.live_tv_outlined)
+            const IconButton(
+              onPressed: null,
+              icon: Icon(Icons.live_tv_outlined),
             ),
-
-            SizedBox(width: 10,),
-
+            const SizedBox(width: 10),
             Text(
               label,
               style: Theme.of(context).textTheme.bodyMedium,
@@ -638,65 +609,61 @@ Widget _buildWatchBox(int month, int day , int hours, String label, BuildContext
           ],
         ),
       ),
-      // Below box
+
+      // Bottom box
       Container(
+        width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: Colors.transparent,
-          border: Border.all(
-            color: Colors.grey.shade500,
-          ),
+          border: Border.all(color: Colors.grey.shade500),
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 7.0),
+        child: isEpisodeCount
+            ? Column(
+          children: [
+            Text(
+              day.toString(),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "Episodes",
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        )
+            : Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 7),
           child: Row(
-            spacing: 10,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    month.toString(),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Month",
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    day.toString(),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Day",
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    hours.toString(),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Hours",
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
+              _buildTimeValue(month, "Month", context),
+              _buildTimeValue(day, "Day", context),
+              _buildTimeValue(hours, "Hours", context),
             ],
           ),
         ),
+      ),
+    ],
+  );
+}
+
+Widget _buildTimeValue(
+    int value,
+    String label,
+    BuildContext context,
+    ) {
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(
+        value.toString(),
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      const SizedBox(height: 4),
+      Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium,
       ),
     ],
   );
