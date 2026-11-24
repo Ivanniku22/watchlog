@@ -29,8 +29,10 @@ class MovieDetailsView extends GetView<MovieDetailsController> {
               ),
             ),
             actions: [
-              Obx(
-                    () => PopupMenuButton<String>(
+              Obx(() {
+                final isAdded = controller.isMovieAdded.value;
+
+                return PopupMenuButton<String>(
                   icon: const Icon(
                     Icons.more_horiz,
                     color: Colors.white,
@@ -64,24 +66,21 @@ class MovieDetailsView extends GetView<MovieDetailsController> {
                     }
                   },
                   itemBuilder: (context) {
-                    if (controller.isMovieAdded.value) {
-                      return const [
-                        PopupMenuItem(
+                    return [
+                      if (isAdded)
+                        const PopupMenuItem(
                           value: 'remove',
                           child: Text('Remove from watch list'),
+                        )
+                      else
+                        const PopupMenuItem(
+                          value: 'watchlist',
+                          child: Text('Add to watch list'),
                         ),
-                      ];
-                    }
-
-                    return const [
-                      PopupMenuItem(
-                        value: 'watchlist',
-                        child: Text('Add to watch list'),
-                      ),
                     ];
                   },
-                ),
-              )
+                );
+              }),
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
@@ -106,90 +105,93 @@ class MovieDetailsView extends GetView<MovieDetailsController> {
                   ),
 
                   // Movie title and metadata
+
                   Align(
                     alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            controller.movie.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: Text(
+                                controller.movie.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
+                            const SizedBox(height: 8),
 
-                          // Metadata
-                          Obx(() {
-                            if (controller.isLoadingDetails.value) {
-                              return Row(
+                            Obx(() {
+                              if (controller.isLoadingDetails.value) {
+                                return Wrap(
+                                  spacing: 10,
+                                  children: [
+                                    _skeletonBar(65),
+                                    _skeletonBar(75),
+                                    _skeletonBar(55),
+                                  ],
+                                );
+                              }
+
+                              final details = controller.movieDetails.value;
+
+                              if (details == null) {
+                                return const SizedBox.shrink();
+                              }
+
+                              final releaseDate =
+                                  details['release_date'] as String? ?? '';
+
+                              final year = releaseDate.length >= 4
+                                  ? releaseDate.substring(0, 4)
+                                  : 'Unknown';
+
+                              final runtime = details['runtime'];
+
+                              final genres =
+                                  (details['genres'] as List<dynamic>?)
+                                      ?.map((genre) => genre['name'] as String)
+                                      .toList() ??
+                                      [];
+
+                              const metadataStyle = TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                              );
+
+                              return Wrap(
+                                spacing: 8,
+                                runSpacing: 6,
+                                crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
-                                  _skeletonBar(65),
-                                  const SizedBox(width: 10),
-                                  _skeletonBar(75),
-                                  const SizedBox(width: 10),
-                                  _skeletonBar(55),
+                                  Text(year, style: metadataStyle),
+                                  if (runtime != null)
+                                    Text('• $runtime min', style: metadataStyle),
+                                  ...genres.map(
+                                        (genre) => Text(
+                                      '• $genre',
+                                      style: metadataStyle,
+                                    ),
+                                  ),
                                 ],
                               );
-                            }
-
-                            final details = controller.movieDetails.value;
-
-                            if (details == null) {
-                              return const SizedBox.shrink();
-                            }
-
-                            final releaseDate =
-                                details['release_date'] as String? ?? '';
-
-                            final year = releaseDate.length >= 4
-                                ? releaseDate.substring(0, 4)
-                                : 'Unknown';
-
-                            final runtime = details['runtime'];
-
-                            final genres =
-                                (details['genres'] as List<dynamic>?)
-                                    ?.map((genre) => genre['name'] as String)
-                                    .toList() ??
-                                    [];
-
-                            const metadataStyle = TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
-                            );
-
-                            return Wrap(
-                              spacing: 8,
-                              runSpacing: 6,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                Text(year, style: metadataStyle),
-                                if (runtime != null)
-                                  Text(
-                                    '• $runtime min',
-                                    style: metadataStyle,
-                                  ),
-                                ...genres.map(
-                                      (genre) => Text(
-                                    '• $genre',
-                                    style: metadataStyle,
-                                  ),
-                                ),
-                              ],
-                            );
-                          }),
-                        ],
+                            }),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+
                 ],
               ),
             ),
