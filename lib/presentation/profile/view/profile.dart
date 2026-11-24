@@ -233,33 +233,17 @@ class Profile extends GetView<ProfileController>{
 
                   const SizedBox(height: 10),
 
-                  // Horizontally scrolling stats
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 150,
-                          child: _buildWatchBox(
-                            0, 0, 0,
-                            "TV Time",
-                            context,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Obx(
-                              () => SizedBox(
-                            width: 200,
-                            child: _buildWatchBox(
-                              0,
-                              controller.watchedEpisodeCount.value,
-                              0,
-                              "Episodes Watched",
-                              context,
-                            ),
-                          ),
-                        ),
-                      ],
+                  // Episode stats
+                  Obx(
+                        () => SizedBox(
+                      width: 200,
+                      child: _buildWatchBox(
+                        0,
+                        controller.watchedEpisodeCount.value,
+                        0,
+                        "Episodes Watched",
+                        context,
+                      ),
                     ),
                   ),
 

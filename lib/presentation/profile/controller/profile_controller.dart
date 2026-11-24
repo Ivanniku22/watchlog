@@ -18,12 +18,12 @@ import '../../../data/models/tmdb_models/popular.dart';
 
 class ProfileController extends GetxController {
   ProfileController({AuthRepository? authRepository})
-    : _authRepository = authRepository ?? Get.find<AuthRepository>();
+      : _authRepository = authRepository ?? Get.find<AuthRepository>();
 
   final AuthRepository _authRepository;
   final TmdbRepository _tmdbRepository = Get.find<TmdbRepository>();
   final WatchHistoryRepository _watchHistoryRepository =
-      Get.find<WatchHistoryRepository>();
+  Get.find<WatchHistoryRepository>();
 
   final user = Rxn<AppUser>();
   final isSigningOut = false.obs;
@@ -50,7 +50,6 @@ class ProfileController extends GetxController {
   final watchedEpisodeCount = 0.obs;
 
   StreamSubscription<int>? _episodeCountSubscription;
-
 
   @override
   void onInit() {
@@ -749,28 +748,27 @@ class ProfileController extends GetxController {
         );
   }
 
-
   @override
   void onClose() {
     _episodeCountSubscription?.cancel();
     super.onClose();
   }
 
-  // Future<void> checkWatchedEpisodeCount() async {
-  //   final user = FirebaseAuth.instance.currentUser;
-  //
-  //   if (user == null) {
-  //     debugPrint('No signed-in user found.');
-  //     return;
-  //   }
-  //
-  //   final result = await FirebaseFirestore.instance
-  //       .collection('users')
-  //       .doc(user.uid)
-  //       .collection('watched_episodes')
-  //       .count()
-  //       .get();
-  //
-  //   debugPrint('TOTAL WATCHED EPISODES: ${result.count}');
-  // }
+// Future<void> checkWatchedEpisodeCount() async {
+//   final user = FirebaseAuth.instance.currentUser;
+//
+//   if (user == null) {
+//     debugPrint('No signed-in user found.');
+//     return;
+//   }
+//
+//   final result = await FirebaseFirestore.instance
+//       .collection('users')
+//       .doc(user.uid)
+//       .collection('watched_episodes')
+//       .count()
+//       .get();
+//
+//   debugPrint('TOTAL WATCHED EPISODES: ${result.count}');
+// }
 }
