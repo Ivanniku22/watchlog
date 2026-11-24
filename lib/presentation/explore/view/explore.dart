@@ -103,14 +103,18 @@ class Explore extends GetView<ExploreController>{
                     final posterPath = result.posterPath;
 
                     return GestureDetector(
-                      onTap: () {
+                      onTap: () async {
                         if (result.isMovie) {
-                          Get.toNamed(
+                          await Get.toNamed(
                             AppRoutes.movieDetails,
                             arguments: result,
                           );
+
+                          // Refresh movie watchlist after returning from details.
+                          await controller.loadAddedMovies();
+
                         } else if (result.isTvShow) {
-                          Get.toNamed(
+                          await Get.toNamed(
                             AppRoutes.showDetails,
                             arguments: TvShow(
                               id: result.id,
@@ -130,6 +134,8 @@ class Explore extends GetView<ExploreController>{
                               voteCount: 0,
                             ),
                           );
+
+                          await controller.loadAddedShows();
                         }
                       },
                       child: Stack(
