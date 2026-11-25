@@ -79,12 +79,14 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
                                   enabled:
                                   !controller.isUpdatingWatchlist.value,
                                   onSelected: (value) {
-                                    if (value == 'add') {
-                                      controller.addToWatchlist();
-                                    } else if (value == 'remove') {
-                                      _showRemoveConfirmation(context);
-                                    }
-                                  },
+                                        if (value == 'add') {
+                                          controller.addToWatchlist();
+                                        } else if (value == 'remove') {
+                                          _showRemoveConfirmation(context);
+                                        } else if (value == 'unwatch') {
+                                          _showUnwatchConfirmation(context);
+                                        }
+                                      },
                                   itemBuilder: (context) {
                                     if (controller.isShowAdded.value) {
                                       return const [
@@ -92,18 +94,26 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
                                           value: 'remove',
                                           child: Row(
                                             children: [
-                                              Icon(
-                                                CupertinoIcons.trash,
-                                                color: Colors.red,
-                                                size: 19,
-                                              ),
+                                              Icon(CupertinoIcons.trash, color: Colors.red, size: 19),
                                               SizedBox(width: 10),
                                               Text(
                                                 'Remove from Watchlist',
-                                                style: TextStyle(
-                                                  color: Colors.red,
-                                                ),
+                                                style: TextStyle(color: Colors.red),
                                               ),
+                                            ],
+                                          ),
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'unwatch',
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.restart_alt_rounded,
+                                                color: Color(0xFFFFD700),
+                                                size: 19,
+                                              ),
+                                              SizedBox(width: 10),
+                                              Text('Unwatch This Show'),
                                             ],
                                           ),
                                         ),
@@ -112,15 +122,33 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
 
                                     return const [
                                       PopupMenuItem(
-                                        value: 'add',
+                                        value: 'remove',
                                         child: Row(
                                           children: [
                                             Icon(
-                                              CupertinoIcons.add,
+                                              CupertinoIcons.trash,
+                                              color: Colors.red,
                                               size: 19,
                                             ),
                                             SizedBox(width: 10),
-                                            Text('Add to Watchlist'),
+                                            Text(
+                                              'Remove from Watchlist',
+                                              style: TextStyle(color: Colors.red),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      PopupMenuItem(
+                                        value: 'unwatch',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.restart_alt_rounded,
+                                              color: Color(0xFFFFD700),
+                                              size: 19,
+                                            ),
+                                            SizedBox(width: 10),
+                                            Text('Unwatch This Show'),
                                           ],
                                         ),
                                       ),
@@ -371,6 +399,37 @@ class ShowDetailsView extends GetView<ShowDetailsController> {
             child: const Text(
               'Remove',
               style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showUnwatchConfirmation(BuildContext context) {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Unwatch This Show?'),
+        content: const Text(
+          'This will reset all watched episodes for this show '
+              'and move it to Plan to Watch. The show will remain '
+              'in your watchlist.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              controller.unwatchShow();
+            },
+            child: const Text(
+              'Unwatch',
+              style: TextStyle(
+                color: Color(0xFFFFD700),
+              ),
             ),
           ),
         ],

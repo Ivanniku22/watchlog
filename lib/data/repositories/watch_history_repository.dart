@@ -651,6 +651,31 @@ class WatchHistoryRepository {
     await _addedShows.doc(showId.toString()).delete();
   }
 
+  Future<int> unwatchShow(int showId) async {
+    // Find all watched episodes belonging to this show.
+    final episodesSnapshot = await _watchedEpisodes
+        .where('showId', isEqualTo: showId)
+        .get();
+
+    const batchLimit = 400;
+    final episodes = episodesSnapshot.docs;
+
+    // Delete watched episode records in batches.
+    for (var i = 0; i < episodes.length; i += batchLimit) {
+      final batch = _firestore.batch();
+
+      final chunk = episodes.skip(i).take(batchLimit);
+
+      for (final episode in chunk) {
+        batch.delete(episode.reference);
+      }
+
+      await batch.commit();
+    }
+
+    return episodes.length;
+  }
+
   Stream<int> watchWatchedEpisodeCount() {
     return _watchedEpisodes
         .snapshots()

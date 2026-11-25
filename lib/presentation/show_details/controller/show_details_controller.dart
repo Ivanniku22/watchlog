@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../data/models/tmdb_models/popular.dart';
+import '../../../data/models/user_show.dart';
 import '../../../data/repositories/tmdb_repostiory.dart';
 import '../../../data/repositories/watch_history_repository.dart';
 
@@ -246,6 +247,63 @@ class ShowDetailsController extends GetxController {
       );
     } finally {
       isUpdatingWatchlist.value = false;
+    }
+  }
+
+  Future<void> unwatchShow() async {
+    try {
+      final removedCount = await watchHistoryRepository.unwatchShow(
+        show.id,
+      );
+
+      Get.snackbar(
+        'Show Reset',
+        removedCount == 0
+            ? '${show.name} has no watched episodes.'
+            : '${show.name} moved to Plan to Watch. $removedCount episodes reset.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.isDarkMode
+            ? const Color(0xFF252525)
+            : const Color(0xFFFFFFFF),
+        colorText: Get.isDarkMode
+            ? Colors.white
+            : const Color(0xFF222222),
+        icon: const Icon(
+          Icons.restart_alt_rounded,
+          color: Color(0xFFFFD700),
+        ),
+        borderRadius: 16,
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        duration: const Duration(seconds: 3),
+        boxShadows: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Could not reset ${show.name}. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.isDarkMode
+            ? const Color(0xFF252525)
+            : const Color(0xFFFFFFFF),
+        colorText: Get.isDarkMode
+            ? Colors.white
+            : const Color(0xFF222222),
+        icon: const Icon(
+          Icons.error_outline_rounded,
+          color: Color(0xFFE57373),
+        ),
+        borderRadius: 16,
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        duration: const Duration(seconds: 3),
+      );
     }
   }
 }
