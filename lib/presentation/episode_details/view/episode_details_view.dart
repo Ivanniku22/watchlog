@@ -8,33 +8,37 @@ class EpisodeDetailsView extends GetView<EpisodeDetailsController> {
   const EpisodeDetailsView({super.key});
 
   @override
-
-  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: isDark
-          ? Colors.transparent
-          : Colors.grey.shade100,
+      backgroundColor: isDark ? Colors.transparent : Colors.grey.shade100,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         elevation: 0,
         scrolledUnderElevation: 0,
+        backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         toolbarHeight: 56,
         titleSpacing: 0,
         leadingWidth: 56,
-
         title: Row(
           children: [
             // Down button
             IconButton(
               onPressed: Get.back,
-              icon: Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: isDark ? Colors.white : Colors.black87,
-                size: 30,
+              icon: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Colors.white,
+                  size: 30,
+                ),
               ),
             ),
 
@@ -45,41 +49,49 @@ class EpisodeDetailsView extends GetView<EpisodeDetailsController> {
                   final currentIndex = controller.currentIndex.value;
                   final total = controller.totalEpisodes;
 
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(5, (slot) {
-                      final index = currentIndex + slot - 2;
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 9,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(5, (slot) {
+                        final index = currentIndex + slot - 2;
 
-                      if (index < 0 || index >= total) {
-                        return const SizedBox(width: 16);
-                      }
+                        if (index < 0 || index >= total) {
+                          return const SizedBox(width: 16);
+                        }
 
-                      final distance =
-                      (index - currentIndex).abs();
-                      final isCurrent = index == currentIndex;
+                        final distance = (index - currentIndex).abs();
+                        final isCurrent = index == currentIndex;
 
-                      return GestureDetector(
-                        onTap: () =>
-                            controller.changeEpisode(index),
-                        child: AnimatedContainer(
-                          duration:
-                          const Duration(milliseconds: 250),
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 3,
-                          ),
-                          width: isCurrent ? 20 : 10,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: isCurrent
-                                ? Theme.of(context).colorScheme.primary
-                                : (isDark ? Colors.white : Colors.black).withValues(
-                              alpha: distance == 1 ? 0.5 : 0.2,
+                        return GestureDetector(
+                          onTap: () => controller.changeEpisode(index),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 3,
                             ),
-                            borderRadius: BorderRadius.circular(10),
+                            width: isCurrent ? 20 : 10,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: isCurrent
+                                  ? Theme.of(context).colorScheme.primary
+                                  : (isDark ? Colors.white : Colors.black)
+                                  .withValues(
+                                alpha: distance == 1 ? 0.5 : 0.2,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                        ),
-                      );
-                    }),
+                        );
+                      }),
+                    ),
                   );
                 }),
               ),
@@ -105,27 +117,28 @@ class EpisodeDetailsView extends GetView<EpisodeDetailsController> {
           final theme = Theme.of(context);
           final colors = theme.colorScheme;
 
+          // Hero sizing: keep a true 16:10 visible image *below* the app bar.
+          final mq = MediaQuery.of(context);
+          final topInset = mq.padding.top + kToolbarHeight;
+          final heroHeight = mq.size.width * 10 / 16 + topInset;
+          const edge = 16.0; // same margin on every side
+          const gap = 12.0; // same gap under the app bar
+
           final stillPath = episode['still_path'] as String?;
           final airDate = episode['air_date'] as String?;
           final overview = episode['overview'] as String? ?? '';
-          final rating =
-              (episode['vote_average'] as num?)?.toDouble() ?? 0;
+          final rating = (episode['vote_average'] as num?)?.toDouble() ?? 0;
           final runtime = episode['runtime'] as int?;
 
-          final progressController =
-          Get.find<EpisodeProgressController>();
+          final progressController = Get.find<EpisodeProgressController>();
 
           return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top spacing for the transparent AppBar.
-                const SizedBox(height: 90),
-
-
-                // Cinematic episode still with title overlay.
-                AspectRatio(
-                  aspectRatio: 16 / 10,
+                // Cinematic episode still with overlay.
+                SizedBox(
+                  height: heroHeight,
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
@@ -152,7 +165,6 @@ class EpisodeDetailsView extends GetView<EpisodeDetailsController> {
                           ),
                         ),
 
-
                       // Gradient behind episode title.
                       const DecoratedBox(
                         decoration: BoxDecoration(
@@ -168,201 +180,212 @@ class EpisodeDetailsView extends GetView<EpisodeDetailsController> {
                           ),
                         ),
                       ),
-                      Positioned(
-                        top: 16,
-                        left: 16,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(8),
-                          onTap: () {
-                            Get.toNamed(
-                              AppRoutes.showDetails,
-                              arguments: controller.show,
-                            );
-                          },
-                          child: Container(
-                            constraints: const BoxConstraints(maxWidth: 220),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 9,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade800.withValues(alpha: 0.9),
-                              border: Border.all(color: Colors.white),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    controller.show.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                const Icon(
-                                  Icons.chevron_right_rounded,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ],
-                            ),
-                          ),
+
+                      // Overlay laid out in one column with shared margins,
+                      // so chip, arrows and title can never collide.
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          edge,
+                          topInset + gap,
+                          edge,
+                          edge,
                         ),
-                      ),
-
-
-                      // Previous episode button
-                      Positioned(
-                        left: 12,
-                        top: 0,
-                        bottom: 20,
-                        child: Center(
-                          child: Obx(() {
-                            final isFirst = controller.currentIndex.value == 0;
-
-                            return Material(
-                              color: isFirst
-                                  ? Colors.black.withValues(alpha: 0.2)
-                                  : Colors.black.withValues(alpha: 0.45),
-                              shape: const CircleBorder(),
-                              child: InkWell(
-                                customBorder: const CircleBorder(),
-                                onTap: isFirst ? null : controller.previousEpisode,
-                                child: SizedBox(
-                                  width: 40,
-                                  height: 40,
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.chevron_left_rounded,
-                                      size: 30,
-                                      color: isFirst ? Colors.white38 : Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-
-                      // Next episode button
-                      Positioned(
-                        right: 12,
-                        top: 0,
-                        bottom: 20,
-                        child: Center(
-                          child: Obx(() {
-                            final isLast = controller.currentIndex.value ==
-                                controller.totalEpisodes - 1;
-
-                            return Material(
-                              color: isLast
-                                  ? Colors.black.withValues(alpha: 0.2)
-                                  : Colors.black.withValues(alpha: 0.45),
-                              shape: const CircleBorder(),
-                              child: InkWell(
-                                customBorder: const CircleBorder(),
-                                onTap: isLast ? null : controller.nextEpisode,
-                                child: SizedBox(
-                                  width: 40,
-                                  height: 40,
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.chevron_right_rounded,
-                                      size: 30,
-                                      color: isLast ? Colors.white38 : Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-
-                      Positioned(
-                        left: 20,
-                        right: 20,
-                        bottom: 22,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                        child: Column(
                           children: [
+                            // Show name chip
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(8),
+                                onTap: () => Get.toNamed(
+                                  AppRoutes.showDetails,
+                                  arguments: controller.show,
+                                ),
+                                child: Container(
+                                  constraints:
+                                  const BoxConstraints(maxWidth: 220),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 9,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade800
+                                        .withValues(alpha: 0.9),
+                                    border: Border.all(color: Colors.white),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          controller.show.name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      const Icon(
+                                        Icons.chevron_right_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // Prev / next arrows, centered in the free space
+                            // between the chip and the title.
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                              child: Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    'S${episode['season_number']} · E${episode['episode_number']}',
-                                    style: theme.textTheme.labelMedium
-                                        ?.copyWith(
-                                      color: Colors.white70,
-                                      letterSpacing: 1.5,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    episode['name'] ??
-                                        'Untitled Episode',
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.headlineSmall
-                                        ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                  Obx(() {
+                                    final isFirst =
+                                        controller.currentIndex.value == 0;
+                                    return Material(
+                                      color: Colors.black.withValues(
+                                        alpha: isFirst ? 0.2 : 0.45,
+                                      ),
+                                      shape: const CircleBorder(),
+                                      child: InkWell(
+                                        customBorder: const CircleBorder(),
+                                        onTap: isFirst
+                                            ? null
+                                            : controller.previousEpisode,
+                                        child: SizedBox(
+                                          width: 40,
+                                          height: 40,
+                                          child: Icon(
+                                            Icons.chevron_left_rounded,
+                                            size: 30,
+                                            color: isFirst
+                                                ? Colors.white38
+                                                : Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                  Obx(() {
+                                    final isLast =
+                                        controller.currentIndex.value ==
+                                            controller.totalEpisodes - 1;
+                                    return Material(
+                                      color: Colors.black.withValues(
+                                        alpha: isLast ? 0.2 : 0.45,
+                                      ),
+                                      shape: const CircleBorder(),
+                                      child: InkWell(
+                                        customBorder: const CircleBorder(),
+                                        onTap: isLast
+                                            ? null
+                                            : controller.nextEpisode,
+                                        child: SizedBox(
+                                          width: 40,
+                                          height: 40,
+                                          child: Icon(
+                                            Icons.chevron_right_rounded,
+                                            size: 30,
+                                            color: isLast
+                                                ? Colors.white38
+                                                : Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 12),
 
-                            // TV Time-style watched toggle.
-                            Obx(() {
-                              final seasonNumber = episode['season_number'] as int;
-                              final episodeNumber = episode['episode_number'] as int;
-
-                              final watched = progressController.isWatched(
-                                showId: controller.show.id,
-                                seasonNumber: seasonNumber,
-                                episodeNumber: episodeNumber,
-                              );
-
-                              return GestureDetector(
-                                onTap: () {
-                                  progressController.toggleWatched(
-                                    showId: controller.show.id,
-                                    showTitle: controller.show.name,
-                                    seasonNumber: seasonNumber,
-                                    episodeNumber: episodeNumber,
-                                    episodeTitle: episode['name'] as String? ?? 'Untitled Episode',
-                                  );
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  width: 36,
-                                  height: 36,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: watched
-                                        ? Colors.green
-                                        : Colors.grey.shade600,
-                                  ),
-                                  child: const Icon(
-                                    Icons.check_rounded,
-                                    color: Colors.white,
-                                    size: 23,
+                            // Season/episode label + title + watched toggle
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'S${episode['season_number']} · E${episode['episode_number']}',
+                                        style:
+                                        theme.textTheme.labelMedium?.copyWith(
+                                          color: Colors.white70,
+                                          letterSpacing: 1.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        episode['name'] ?? 'Untitled Episode',
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: theme.textTheme.headlineSmall
+                                            ?.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              );
-                            }),
+                                const SizedBox(width: 12),
+
+                                // TV Time-style watched toggle.
+                                Obx(() {
+                                  final seasonNumber =
+                                  episode['season_number'] as int;
+                                  final episodeNumber =
+                                  episode['episode_number'] as int;
+
+                                  final watched = progressController.isWatched(
+                                    showId: controller.show.id,
+                                    seasonNumber: seasonNumber,
+                                    episodeNumber: episodeNumber,
+                                  );
+
+                                  return GestureDetector(
+                                    onTap: () {
+                                      progressController.toggleWatched(
+                                        showId: controller.show.id,
+                                        showTitle: controller.show.name,
+                                        seasonNumber: seasonNumber,
+                                        episodeNumber: episodeNumber,
+                                        episodeTitle: episode['name']
+                                        as String? ??
+                                            'Untitled Episode',
+                                      );
+                                    },
+                                    child: AnimatedContainer(
+                                      duration:
+                                      const Duration(milliseconds: 200),
+                                      width: 36,
+                                      height: 36,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: watched
+                                            ? Colors.green
+                                            : Colors.grey.shade600,
+                                      ),
+                                      child: const Icon(
+                                        Icons.check_rounded,
+                                        color: Colors.white,
+                                        size: 23,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -447,8 +470,7 @@ class EpisodeDetailsView extends GetView<EpisodeDetailsController> {
                             ),
                             const SizedBox(width: 8),
                             Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   children: List.generate(
@@ -456,8 +478,7 @@ class EpisodeDetailsView extends GetView<EpisodeDetailsController> {
                                         (index) => Icon(
                                       Icons.star_rounded,
                                       size: 16,
-                                      color: index <
-                                          (rating / 2).round()
+                                      color: index < (rating / 2).round()
                                           ? Colors.amber
                                           : colors.outlineVariant,
                                     ),
@@ -517,5 +538,4 @@ class EpisodeDetailsView extends GetView<EpisodeDetailsController> {
       ),
     );
   }
-
 }
