@@ -88,6 +88,7 @@ class EpisodesTab extends GetView<ShowDetailsController> {
                     child: SeasonEpisodeList(
                       episodes: episodes,
                       show: controller.show,
+                      seasonNumber: seasonNumber,
                     ),
                   );
                 }),

@@ -429,6 +429,65 @@ class WatchHistoryRepository {
     }, SetOptions(merge: true));
   }
 
+  Future<int> markSeasonWatched({
+    required int showId,
+    required String showTitle,
+    required int seasonNumber,
+    required List<int> episodeNumbers,
+    required Map<int, String> episodeTitles,
+  }) async {
+    if (episodeNumbers.isEmpty) return 0;
+
+    final existingSnapshot = await _watchedEpisodes
+        .where('showId', isEqualTo: showId)
+        .get();
+
+    final watchedEpisodeNumbers = existingSnapshot.docs
+        .where((doc) => doc.data()['seasonNumber'] == seasonNumber)
+        .map((doc) => doc.data()['episodeNumber'])
+        .whereType<num>()
+        .map((number) => number.toInt())
+        .toSet();
+
+    final episodesToAdd = episodeNumbers.toSet()
+        .where((number) => !watchedEpisodeNumbers.contains(number))
+        .toList();
+
+    if (episodesToAdd.isEmpty) return 0;
+
+    const batchLimit = 400;
+    var markedCount = 0;
+
+    for (var i = 0; i < episodesToAdd.length; i += batchLimit) {
+      final batch = _firestore.batch();
+
+      final chunk = episodesToAdd.skip(i).take(batchLimit);
+
+      for (final episodeNumber in chunk) {
+        final documentId =
+            '${showId}_S${seasonNumber}_E$episodeNumber';
+
+        batch.set(
+          _watchedEpisodes.doc(documentId),
+          {
+            'showId': showId,
+            'showTitle': showTitle,
+            'seasonNumber': seasonNumber,
+            'episodeNumber': episodeNumber,
+            'episodeTitle': episodeTitles[episodeNumber] ?? '',
+            'watchedAt': Timestamp.now(),
+          },
+        );
+
+        markedCount++;
+      }
+
+      await batch.commit();
+    }
+
+    return markedCount;
+  }
+
   Future<bool> isEpisodeWatched({
     required int showId,
     required int seasonNumber,
