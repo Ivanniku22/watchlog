@@ -1,5 +1,6 @@
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../data/models/tmdb_models/popular.dart';
@@ -119,6 +120,27 @@ class ShowDetailsController extends GetxController {
         'Added to Watchlist',
         '${show.name} has been added to your watchlist.',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.isDarkMode
+            ? const Color(0xFF252525)
+            : const Color(0xFFFFFFFF),
+        colorText: Get.isDarkMode
+            ? Colors.white
+            : const Color(0xFF222222),
+        icon: const Icon(
+          Icons.bookmark_added_rounded,
+          color: Color(0xFFFFD700),
+        ),
+        borderRadius: 16,
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        duration: const Duration(seconds: 3),
+        boxShadows: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       );
     } catch (e) {
       debugPrint('Failed to add show: $e');
@@ -127,6 +149,27 @@ class ShowDetailsController extends GetxController {
         'Error',
         'Could not add this show. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.isDarkMode
+            ? const Color(0xFF252525)
+            : const Color(0xFFFFFFFF),
+        colorText: Get.isDarkMode
+            ? Colors.white
+            : const Color(0xFF222222),
+        icon: const Icon(
+          Icons.error_outline_rounded,
+          color: Color(0xFFE57373),
+        ),
+        borderRadius: 16,
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        duration: const Duration(seconds: 3),
+        boxShadows: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       );
     } finally {
       isUpdatingWatchlist.value = false;
@@ -150,6 +193,27 @@ class ShowDetailsController extends GetxController {
         'Removed',
         '${show.name} has been removed from your watchlist.',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.isDarkMode
+            ? const Color(0xFF252525)
+            : const Color(0xFFFFFFFF),
+        colorText: Get.isDarkMode
+            ? Colors.white
+            : const Color(0xFF222222),
+        icon: const Icon(
+          Icons.bookmark_remove_rounded,
+          color: Color(0xFFFFD700),
+        ),
+        borderRadius: 16,
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        duration: const Duration(seconds: 3),
+        boxShadows: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       );
     } catch (e) {
       debugPrint('Failed to remove show: $e');
@@ -158,6 +222,27 @@ class ShowDetailsController extends GetxController {
         'Error',
         'Could not remove this show. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.isDarkMode
+            ? const Color(0xFF252525)
+            : const Color(0xFFFFFFFF),
+        colorText: Get.isDarkMode
+            ? Colors.white
+            : const Color(0xFF222222),
+        icon: const Icon(
+          Icons.error_outline_rounded,
+          color: Color(0xFFE57373),
+        ),
+        borderRadius: 16,
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        duration: const Duration(seconds: 3),
+        boxShadows: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       );
     } finally {
       isUpdatingWatchlist.value = false;
