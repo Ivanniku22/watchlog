@@ -11,6 +11,20 @@ import '../../../../data/models/watchlist_models/next_episode.dart';
 import '../../../../data/repositories/tmdb_repostiory.dart';
 import '../../../../data/repositories/watch_history_repository.dart';
 
+
+class _ShowClassification {
+  final WatchlistEpisode? currentlyWatching;
+  final WatchlistEpisode? planToWatch;
+  final WatchlistEpisode? upcoming;
+
+  const _ShowClassification({
+    this.currentlyWatching,
+    this.planToWatch,
+    this.upcoming,
+  });
+}
+
+
 class WatchlistController extends GetxController {
   WatchlistController({
     required this.watchHistoryRepository,
@@ -45,12 +59,16 @@ class WatchlistController extends GetxController {
   final Set<String> _watchedEpisodeKeys = {};
   final Set<int> _showsWithWatchedEpisodes = {};
 
-  // --------------------------------------------------
-  // TMDB CACHES
-  // --------------------------------------------------
-
+  // Cached TMDB responses
   final Map<int, Map<String, dynamic>> _showDetailsCache = {};
   final Map<String, Map<String, dynamic>> _seasonsCache = {};
+
+// Cache timestamps
+  final Map<int, DateTime> _showDetailsCacheTime = {};
+  final Map<String, DateTime> _seasonDetailsCacheTime = {};
+
+// Cache lifetime
+  static const Duration _cacheDuration = Duration(hours: 6);
 
   // --------------------------------------------------
   // FIRESTORE SUBSCRIPTIONS
@@ -78,6 +96,11 @@ class WatchlistController extends GetxController {
   bool _isRefreshingAffectedShows = false;
 
   final Set<int> _pendingShowRefreshIds = {};
+
+  // In-progress TMDB requests
+  final Map<int, Future<Map<String, dynamic>>> _showDetailsRequests = {};
+
+  final Map<String, Future<Map<String, dynamic>>> _seasonDetailsRequests = {};
 
   // --------------------------------------------------
   // INIT
@@ -107,19 +130,34 @@ class WatchlistController extends GetxController {
   // TMDB CACHING
   // --------------------------------------------------
 
-  Future<Map<String, dynamic>> getCachedShowDetails(
-      int showId,
-      ) async {
-    if (_showDetailsCache.containsKey(showId)) {
+  Future<Map<String, dynamic>> getCachedShowDetails(int showId) async {
+    final cachedTime = _showDetailsCacheTime[showId];
+
+    // Return cached data if it hasn't expired.
+    if (_showDetailsCache.containsKey(showId) &&
+        cachedTime != null &&
+        DateTime.now().difference(cachedTime) < _cacheDuration) {
       return _showDetailsCache[showId]!;
     }
 
-    final details =
-    await tmdbRepository.getTvShowDetails(showId);
+    // Reuse an ongoing request for this show.
+    if (_showDetailsRequests.containsKey(showId)) {
+      return _showDetailsRequests[showId]!;
+    }
 
-    _showDetailsCache[showId] = details;
+    final request = tmdbRepository.getTvShowDetails(showId);
+    _showDetailsRequests[showId] = request;
 
-    return details;
+    try {
+      final details = await request;
+
+      _showDetailsCache[showId] = details;
+      _showDetailsCacheTime[showId] = DateTime.now();
+
+      return details;
+    } finally {
+      _showDetailsRequests.remove(showId);
+    }
   }
 
   Future<Map<String, dynamic>> getCachedSeasonDetails(
@@ -127,19 +165,33 @@ class WatchlistController extends GetxController {
       int seasonNumber,
       ) async {
     final cacheKey = '${showId}_$seasonNumber';
+    final cachedTime = _seasonDetailsCacheTime[cacheKey];
 
-    if (_seasonsCache.containsKey(cacheKey)) {
+    // Return cached data if it hasn't expired.
+    if (_seasonsCache.containsKey(cacheKey) &&
+        cachedTime != null &&
+        DateTime.now().difference(cachedTime) < _cacheDuration) {
       return _seasonsCache[cacheKey]!;
     }
 
-    final details = await tmdbRepository.getSeasonDetails(
-      showId,
-      seasonNumber,
-    );
+    // Reuse an ongoing request for this season.
+    if (_seasonDetailsRequests.containsKey(cacheKey)) {
+      return _seasonDetailsRequests[cacheKey]!;
+    }
 
-    _seasonsCache[cacheKey] = details;
+    final request = tmdbRepository.getSeasonDetails(showId, seasonNumber);
+    _seasonDetailsRequests[cacheKey] = request;
 
-    return details;
+    try {
+      final details = await request;
+
+      _seasonsCache[cacheKey] = details;
+      _seasonDetailsCacheTime[cacheKey] = DateTime.now();
+
+      return details;
+    } finally {
+      _seasonDetailsRequests.remove(cacheKey);
+    }
   }
 
   // --------------------------------------------------
@@ -498,6 +550,105 @@ class WatchlistController extends GetxController {
   // CLASSIFY SHOW
   // --------------------------------------------------
 
+
+
+  Future<_ShowClassification> _getShowClassification(
+      UserShow show,
+      ) async {
+    final details = await getCachedShowDetails(show.tmdbId);
+
+    final seasons = (details['seasons'] as List<dynamic>? ?? [])
+        .where(
+          (season) =>
+      (season['season_number'] as num).toInt() > 0,
+    )
+        .toList()
+      ..sort(
+            (a, b) => (a['season_number'] as num)
+            .compareTo(b['season_number'] as num),
+      );
+
+    final hasWatchedEpisodes =
+    _showsWithWatchedEpisodes.contains(show.tmdbId);
+
+    WatchlistEpisode? nextUpcoming;
+
+    // Fetch two seasons concurrently per show.
+    const seasonBatchSize = 2;
+
+    for (var i = 0; i < seasons.length; i += seasonBatchSize) {
+      final batch = seasons.skip(i).take(seasonBatchSize).toList();
+
+      // Fetch this batch concurrently.
+      final seasonDetailsList = await Future.wait(
+        batch.map((season) {
+          final seasonNumber =
+          (season['season_number'] as num).toInt();
+
+          return getCachedSeasonDetails(
+            show.tmdbId,
+            seasonNumber,
+          );
+        }),
+      );
+
+      // Process the responses in chronological season order.
+      for (var j = 0; j < batch.length; j++) {
+        final seasonNumber =
+        (batch[j]['season_number'] as num).toInt();
+
+        final episodes =
+            seasonDetailsList[j]['episodes'] as List<dynamic>? ?? [];
+
+        for (final episode in episodes) {
+          final episodeNumber =
+          (episode['episode_number'] as num).toInt();
+
+          final watchlistEpisode = WatchlistEpisode.fromJson(
+            showId: show.tmdbId,
+            showTitle: show.name,
+            seasonNumber: seasonNumber,
+            json: Map<String, dynamic>.from(episode),
+            posterPath: show.posterPath,
+          );
+
+          // Find the first aired episode that hasn't been watched.
+          if (watchlistEpisode.hasAired) {
+            if (!isEpisodeWatched(
+              showId: show.tmdbId,
+              seasonNumber: seasonNumber,
+              episodeNumber: episodeNumber,
+            )) {
+              if (hasWatchedEpisodes) {
+                return _ShowClassification(
+                  currentlyWatching: watchlistEpisode,
+                );
+              }
+
+              return _ShowClassification(
+                planToWatch: watchlistEpisode,
+              );
+            }
+          } else {
+            // Remember the earliest upcoming episode.
+            final airDate = watchlistEpisode.airDate;
+
+            if (airDate != null &&
+                airDate.isAfter(DateTime.now())) {
+              if (nextUpcoming == null ||
+                  airDate.isBefore(nextUpcoming.airDate!)) {
+                nextUpcoming = watchlistEpisode;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return _ShowClassification(upcoming: nextUpcoming);
+  }
+
+
   Future<void> classifyShow(UserShow show) async {
     currentlyWatching.removeWhere(
           (episode) => episode.showId == show.tmdbId,
@@ -511,29 +662,21 @@ class WatchlistController extends GetxController {
           (episode) => episode.showId == show.tmdbId,
     );
 
-    final hasWatchedEpisodes =
-    _showsWithWatchedEpisodes.contains(show.tmdbId);
+    final result = await _getShowClassification(show);
 
-    final nextAvailable =
-    await findNextAvailableEpisode(show);
-
-    if (nextAvailable != null) {
-      if (hasWatchedEpisodes) {
-        currentlyWatching.add(nextAvailable);
-      } else {
-        planToWatch.add(nextAvailable);
-      }
-
-      return;
+    if (result.currentlyWatching != null) {
+      currentlyWatching.add(result.currentlyWatching!);
     }
 
-    final nextUpcoming =
-    await findNextUpcomingEpisode(show);
+    if (result.planToWatch != null) {
+      planToWatch.add(result.planToWatch!);
+    }
 
-    if (nextUpcoming != null) {
-      upcomingEpisodes.add(nextUpcoming);
+    if (result.upcoming != null) {
+      upcomingEpisodes.add(result.upcoming!);
     }
   }
+
 
   // --------------------------------------------------
   // REFRESH ONLY AFFECTED SHOWS
@@ -591,6 +734,8 @@ class WatchlistController extends GetxController {
   // REFRESH ENTIRE WATCHLIST
   // --------------------------------------------------
 
+
+
   Future<void> refreshWatchlist() async {
     if (_isRefreshing || _isRefreshingAffectedShows) {
       _refreshRequested = true;
@@ -603,35 +748,50 @@ class WatchlistController extends GetxController {
       do {
         _refreshRequested = false;
 
-        currentlyWatching.clear();
-        planToWatch.clear();
-        upcomingEpisodes.clear();
-
-        debugPrint(
-          'WATCHLIST: Starting refresh for '
-              '${myShows.length} shows',
-        );
+        final newCurrentlyWatching = <WatchlistEpisode>[];
+        final newPlanToWatch = <WatchlistEpisode>[];
+        final newUpcomingEpisodes = <WatchlistEpisode>[];
 
         const batchSize = 5;
 
         for (var i = 0; i < myShows.length; i += batchSize) {
-          final batch =
-          myShows.skip(i).take(batchSize).toList();
+          final batch = myShows.skip(i).take(batchSize).toList();
 
-          await Future.wait(
+          final results = await Future.wait(
             batch.map((show) async {
               try {
-                await classifyShow(show);
+                return await _getShowClassification(show);
               } catch (e) {
                 debugPrint(
                   'WATCHLIST: Failed to classify ${show.name}: $e',
                 );
+
+                return const _ShowClassification();
               }
             }),
           );
 
-          // Show the watchlist after the first batch.
-          if (i == 0) {
+          for (final result in results) {
+            if (result.currentlyWatching != null) {
+              newCurrentlyWatching.add(result.currentlyWatching!);
+            }
+
+            if (result.planToWatch != null) {
+              newPlanToWatch.add(result.planToWatch!);
+            }
+
+            if (result.upcoming != null) {
+              newUpcomingEpisodes.add(result.upcoming!);
+            }
+          }
+
+          // Publish the accumulated results after each batch.
+          currentlyWatching.assignAll(newCurrentlyWatching);
+          planToWatch.assignAll(newPlanToWatch);
+          upcomingEpisodes.assignAll(newUpcomingEpisodes);
+
+          // Stop showing the initial loading spinner after the first batch.
+          if (isLoading.value) {
             isLoading.value = false;
           }
 
@@ -641,24 +801,25 @@ class WatchlistController extends GetxController {
           );
         }
 
-        debugPrint(
-          'WATCHLIST: Refresh complete. '
-              'Currently Watching: ${currentlyWatching.length}, '
-              'Plan to Watch: ${planToWatch.length}, '
-              'Upcoming: ${upcomingEpisodes.length}',
-        );
+        // Handle an empty watchlist.
+        if (myShows.isEmpty) {
+          currentlyWatching.clear();
+          planToWatch.clear();
+          upcomingEpisodes.clear();
+          isLoading.value = false;
+        }
       } while (_refreshRequested);
     } finally {
       _isRefreshing = false;
       isLoading.value = false;
 
-      // Apply any watched-episode changes that arrived
-      // while the full refresh was running.
       if (_pendingShowRefreshIds.isNotEmpty) {
         await _refreshShowsByIds({});
       }
     }
   }
+
+
 
   // --------------------------------------------------
   // OPEN SHOW DETAILS
@@ -733,6 +894,24 @@ class WatchlistController extends GetxController {
     }
   }
 
+
+
+  Future<void> refreshPage() async {
+    if (_isRefreshing || _isRefreshingAffectedShows) return;
+
+    errorMessage.value = '';
+
+    // Clear cached TMDB responses to force fresh data.
+    _showDetailsCache.clear();
+    _seasonsCache.clear();
+
+    _showDetailsCacheTime.clear();
+    _seasonDetailsCacheTime.clear();
+
+    await refreshWatchlist();
+  }
+
+
   // --------------------------------------------------
   // CLEANUP
   // --------------------------------------------------
@@ -744,6 +923,12 @@ class WatchlistController extends GetxController {
 
     _showDetailsCache.clear();
     _seasonsCache.clear();
+
+    _showDetailsCacheTime.clear();
+    _seasonDetailsCacheTime.clear();
+
+    _showDetailsRequests.clear();
+    _seasonDetailsRequests.clear();
 
     _watchedEpisodeKeys.clear();
     _showsWithWatchedEpisodes.clear();
