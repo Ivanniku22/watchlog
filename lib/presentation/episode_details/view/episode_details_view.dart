@@ -112,6 +112,13 @@ class EpisodeDetailsView extends GetView<EpisodeDetailsController> {
             controller.previousEpisode();
           }
         },
+        onVerticalDragEnd: (details) {
+          final velocity = details.primaryVelocity ?? 0;
+
+          if (velocity > 0) {
+            Get.back();
+          }
+        },
         child: Obx(() {
           final episode = controller.episode;
           final theme = Theme.of(context);
